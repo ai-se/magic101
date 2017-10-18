@@ -118,20 +118,21 @@ def fold_validation(arff_file, learner, *args):
         MRE_distribution.append(relative_error)
 
     MRE_distribution = [y for x in MRE_distribution for y in x]
-    MRE_distribution.insert(0, 'ABE0(k = '+ str(*args) + ')')
+    MRE_distribution.insert(0, 'ABE0(k='+ str(*args) + ')')
 
     return MRE_distribution
 
 
 if __name__ == '__main__':
     outputs = list()
+    file_name = 'miyazaki94.arff'
     for k in range(1,6):
-        MRE_dist = fold_validation('miyazaki94.arff', abe0, k)
+        MRE_dist = fold_validation(file_name, abe0, k)
         outputs.append(MRE_dist)
         # print(MRE_dist)
 
     # for i in outputs:
     #     print (i)
     # print (outputs)
-
+    print (file_name)
     Stat.rdivDemo(outputs)
