@@ -1,4 +1,5 @@
 from __future__ import division
+from stats import Stat
 import numpy as np
 import random
 from scipy.io import arff
@@ -76,11 +77,11 @@ def abe0(meta, trainData, testData, neigbors):
 
     y_actual = np.ravel(Y_test)
 
-    RE = abs(y_predict - y_actual)
+    MRE = abs(y_predict - y_actual)/y_actual
+    MRE = np.around(MRE,decimals=3)
     # pdb.set_trace()
     # print([round(i, 2) for i in RE])
-
-    return RE.tolist()
+    return MRE.tolist()
 
 
     # y_actual = scaler2.transform(Y_test)
@@ -109,18 +110,28 @@ def fold_validation(arff_file, learner, *args):
     folds = 10 if len(data) > 50 else 3
     kf = KFold(n_splits=folds)
 
-    RE_distribution = list()
+    MRE_distribution = list()
     for train, test in kf.split(indices):
         trainData = data[train]
         testData = data[test]
         relative_error = learner(meta, trainData, testData, *args)
-        RE_distribution.append(relative_error)
+        MRE_distribution.append(relative_error)
 
-    return RE_distribution
+    MRE_distribution = [y for x in MRE_distribution for y in x]
+    MRE_distribution.insert(0, 'ABE0(k = '+ str(*args) + ')')
+
+    return MRE_distribution
 
 
 if __name__ == '__main__':
-    RE_dist = fold_validation('china.arff', abe0, 3)
-    # print([round(i, 2) for i in RE_dist])
-    for i in RE_dist:
-        print(i)
+    outputs = list()
+    for k in range(1,6):
+        MRE_dist = fold_validation('miyazaki94.arff', abe0, k)
+        outputs.append(MRE_dist)
+        # print(MRE_dist)
+
+    # for i in outputs:
+    #     print (i)
+    # print (outputs)
+
+    Stat.rdivDemo(outputs)
