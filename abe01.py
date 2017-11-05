@@ -45,7 +45,7 @@ def abe0(meta, trainData, testData, neigbors):
     k = neigbors
 
     X = trainData[meta.names()[1:-1]]
-    Y = trainData[meta.names()[-2:-1]]
+    Y = trainData[meta.names()[-1:]]
     X = map(lambda x: list(x), X)
     Y = map(lambda x: list(x), Y)
 
@@ -72,7 +72,7 @@ def abe0(meta, trainData, testData, neigbors):
 
     y_predict = clf.predict(xx_test)
 
-    Y_test = testData[meta.names()[-2:-1]]
+    Y_test = testData[meta.names()[-1:]]
     Y_test = map(lambda i: list(i), Y_test)
 
     y_actual = np.ravel(Y_test)
@@ -125,7 +125,7 @@ def fold_validation(arff_file, learner, *args):
 
 if __name__ == '__main__':
     outputs = list()
-    file_name = 'miyazaki94.arff'
+    file_name = 'albrecht.arff'
     for k in range(1,6):
         MRE_dist = fold_validation(file_name, abe0, k)
         outputs.append(MRE_dist)
