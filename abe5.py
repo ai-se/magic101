@@ -33,7 +33,7 @@ class MedianKNNRegressor(KNeighborsRegressor):
 
         return y_pred
 
-def abe5(meta, trainData, testData, neigbors):
+def abe5(meta, trainData, testData, neigbors, adm):
     """
     :param meta: attribute name
     :param trainData:
@@ -61,9 +61,16 @@ def abe5(meta, trainData, testData, neigbors):
     # clf.fit(xx, yy)
 
     yy = np.ravel(Y)
-    clf = KNeighborsRegressor(n_neighbors=k, weights='distance')
-    # clf = KNeighborsRegressor(n_neighbors=k, weights='uniform')
-    # clf = MedianKNNRegressor(n_neighbors=k)
+
+    if adm == 1:
+        clf = KNeighborsRegressor(n_neighbors=k, weights='uniform')
+    elif adm == 2:
+        clf = KNeighborsRegressor(n_neighbors=k, weights='distance')
+    elif adm == 3:
+        clf = MedianKNNRegressor(n_neighbors=k)
+    else:
+        print ("adm error")
+
     clf.fit(xx, yy)
 
     # Testing
@@ -115,27 +122,29 @@ def fold_validation(arff_file, learner, *args):
     for train, test in kf.split(indices):
         trainData = data[train]
         testData = data[test]
-        relative_error = learner(meta, trainData, testData, *args)
+        relative_error = learner(meta, trainData, testData, args[0], args[1])
         MRE_distribution.append(relative_error)
 
     MRE_distribution = [y for x in MRE_distribution for y in x]
-    MRE_distribution.insert(0, 'ABE5(k='+ str(*args) + ')')
+    MRE_distribution.insert(0, 'ABE5(adm='+ str(args[1]) + ')')
 
     return MRE_distribution
 
 
 if __name__ == '__main__':
     outputs = list()
-    file_name = 'albrecht.arff'
-    MRE_dist = fold_validation(file_name, abe5, 3)
-    outputs.append(MRE_dist)
-    # for k in range(3,4):
-    #     MRE_dist = fold_validation(file_name, abe5, k)
-    #     outputs.append(MRE_dist)
-        # print(MRE_dist)
+    file_name = 'maxwell.arff'
+    # method = 1
+    # MRE_dist = fold_validation(file_name, abe5, 3, method)
+    # outputs.append(MRE_dist)
+    for method in range(1,4):
+        MRE_dist = fold_validation(file_name, abe5, 3, method)
+        outputs.append(MRE_dist)
+        print(MRE_dist)
 
     # for i in outputs:
     #     print (i)
-    print (MRE_dist)
+
     print (file_name)
+    # print (outputs)
     Stat.rdivDemo(outputs)
