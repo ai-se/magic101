@@ -102,3 +102,10 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+.idea/encodings.xml
+.idea/inspectionProfiles/
+.idea/magic101.iml
+.idea/markdown-navigator/
+.idea/misc.xml
+.idea/modules.xml
+.idea/workspace.xml

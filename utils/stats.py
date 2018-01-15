@@ -9,9 +9,9 @@
 
 """
 from __future__ import division
-import sys
-import random
+
 import math
+import random
 from functools import reduce
 
 # sys.dont_write_bytecode = True

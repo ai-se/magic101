@@ -1,12 +1,15 @@
 from __future__ import division
-from stats import Stat
-import numpy as np
+
 import random
+
+import numpy as np
 from scipy.io import arff
 from sklearn.model_selection import KFold
-from sklearn.preprocessing import MinMaxScaler
 from sklearn.neighbors.regression import KNeighborsRegressor, check_array, _get_weights
-import pdb
+from sklearn.preprocessing import MinMaxScaler
+
+from utils.stats import Stat
+
 
 class MedianKNNRegressor(KNeighborsRegressor):
     def predict(self, X):
@@ -33,7 +36,8 @@ class MedianKNNRegressor(KNeighborsRegressor):
 
         return y_pred
 
-def abe5(meta, trainData, testData, neigbors, adm):
+
+def abe0(meta, trainData, testData, neigbors):
     """
     :param meta: attribute name
     :param trainData:
@@ -61,16 +65,7 @@ def abe5(meta, trainData, testData, neigbors, adm):
     # clf.fit(xx, yy)
 
     yy = np.ravel(Y)
-
-    if adm == 1:
-        clf = KNeighborsRegressor(n_neighbors=k, weights='uniform')
-    elif adm == 2:
-        clf = KNeighborsRegressor(n_neighbors=k, weights='distance')
-    elif adm == 3:
-        clf = MedianKNNRegressor(n_neighbors=k)
-    else:
-        print ("adm error")
-
+    clf = MedianKNNRegressor(n_neighbors=k)
     clf.fit(xx, yy)
 
     # Testing
@@ -85,8 +80,8 @@ def abe5(meta, trainData, testData, neigbors, adm):
 
     y_actual = np.ravel(Y_test)
 
-    MRE = abs(y_predict - y_actual)/y_actual
-    MRE = np.around(MRE,decimals=3)
+    MRE = abs(y_predict - y_actual) / y_actual
+    MRE = np.around(MRE, decimals=3)
     # pdb.set_trace()
     # print([round(i, 2) for i in RE])
     return MRE.tolist()
@@ -122,29 +117,25 @@ def fold_validation(arff_file, learner, *args):
     for train, test in kf.split(indices):
         trainData = data[train]
         testData = data[test]
-        relative_error = learner(meta, trainData, testData, args[0], args[1])
+        relative_error = learner(meta, trainData, testData, *args)
         MRE_distribution.append(relative_error)
 
     MRE_distribution = [y for x in MRE_distribution for y in x]
-    MRE_distribution.insert(0, 'ABE5(adm='+ str(args[1]) + ')')
+    MRE_distribution.insert(0, 'ABE0(k=' + str(*args) + ')')
 
     return MRE_distribution
 
 
 if __name__ == '__main__':
     outputs = list()
-    file_name = 'maxwell.arff'
-    # method = 1
-    # MRE_dist = fold_validation(file_name, abe5, 3, method)
-    # outputs.append(MRE_dist)
-    for method in range(1,4):
-        MRE_dist = fold_validation(file_name, abe5, 3, method)
+    file_name = 'albrecht.arff'
+    for k in range(1, 6):
+        MRE_dist = fold_validation(file_name, abe0, k)
         outputs.append(MRE_dist)
-        print(MRE_dist)
+        # print(MRE_dist)
 
     # for i in outputs:
     #     print (i)
-
-    print (file_name)
     # print (outputs)
+    print (file_name)
     Stat.rdivDemo(outputs)
