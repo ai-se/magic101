@@ -23,9 +23,11 @@
 
 from __future__ import division, print_function
 from FeatureModel.Feature_tree import FeatureTree
+import random
+import pdb
 
 """
-This module handles the transactions of feature model. All feature model  are formatted as SPLIT xml file,
+This module handles the transactions of feature model. All feature model  are formatted as SPLOT xml file,
 such as http://52.32.1.180:8080/SPLOT/models/model_20170930_228024571.xml
 """
 
@@ -48,3 +50,4 @@ if __name__ == '__main__':
     ))
 
     # Step 3. Check whether one configuration is valid
+    pdb.set_trace()
