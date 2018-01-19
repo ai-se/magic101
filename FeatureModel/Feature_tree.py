@@ -1,14 +1,16 @@
-import sys
-import xml.etree.ElementTree
+import random
 import re
-import validators
+import sys
+import time
 import urllib
-import pdb
+import xml.etree.ElementTree
+
+import validators
 
 __author__ = "Jianfeng Chen"
-__copyright__ = "Copyright (C) 2016 Jianfeng Chen"
+__copyright__ = "Copyright (C) 2018 Jianfeng Chen"
 __license__ = "MIT"
-__version__ = "1.0"
+__version__ = "2.2"
 __email__ = "jchen37@ncsu.edu"
 
 """
@@ -23,7 +25,7 @@ class Node(object):
         self.parent = parent
         self.node_type = node_type
         self.children = []
-        self.name = name
+        self.name = name.strip().replace(' ', '_')
         if node_type == 'g':
             self.g_u = 1
             self.g_d = 0
@@ -33,7 +35,7 @@ class Node(object):
         self.children.append(node)
 
     def __repr__(self):
-        return '%s|%s' % (self.node_type, self.id)
+        return '%s|%s %s' % (self.node_type, self.id, self.name)
 
 
 class Constraint(object):
@@ -70,7 +72,6 @@ class FeatureTree(object):
         self.fea_index_dict = dict()
         self.root = None
         self.features = []
-        self.feature_name = []
         self.groups = []
         self.leaves = []
         self.con = []
@@ -104,7 +105,6 @@ class FeatureTree(object):
                 self.groups.append(node)
             if node.node_type != 'g':
                 self.features.append(node)
-                self.feature_name.append(node.name.strip().replace(' ', '_'))
             if len(node.children) == 0:
                 self.leaves.append(node)
             for i in node.children:
@@ -113,15 +113,19 @@ class FeatureTree(object):
         setting_feature_list(self.root)
         self.featureNum = len(self.features)
 
-    def post_order(self, node, func, extra_args=[]):
+    def post_order(self, node, func, extra_args=None):
         """children, then the root"""
+        if extra_args is None:
+            extra_args = []
         if node.children:
             for c in node.children:
                 self.post_order(c, func, extra_args)
         func(node, *extra_args)
 
-    def pre_order(self, node, func, extra_args=[]):
+    def pre_order(self, node, func, extra_args=None):
         """root, then children"""
+        if extra_args is None:
+            extra_args = []
         func(node, *extra_args)
         if node.children:
             for c in node.children:
@@ -133,6 +137,9 @@ class FeatureTree(object):
         :param fill:
         :return:
         """
+        if type(fill) == dict:
+            tmp = [fill[feature] for feature in self.features]
+            fill = tmp
 
         def find(x):
             return fill[self.find_fea_index(x)]
@@ -166,75 +173,6 @@ class FeatureTree(object):
 
         return check_node(self.root)
 
-    # def fill_form4all_fea(self, form):
-    #     # setting the form by the structure of feature tree
-    #     # leaves should be filled in the form in advanced
-    #     # all not filled feature should be -1 in the form
-    #     def filling(node):
-    #         index = self.features.index(node)
-    #         if form[index] != -1:
-    #             return
-    #         # handling the group features
-    #         if node.node_type == 'g':
-    #             sum = 0
-    #             for c in node.children:
-    #                 i_index = self.features.index(c)
-    #                 sum += form[i_index]
-    #             form[index] = 1 if node.g_d <= sum <= node.g_u else 0
-    #             return
-    #
-    #         """
-    #         # the child is a group
-    #         if node.children[0].node_type == 'g':
-    #             form[index] = form[index+1]
-    #             return
-    #         """
-    #
-    #         # handling the other type of node
-    #         m_child = [x for x in node.children if x.node_type in ['m', 'r', 'g']]
-    #         o_child = [x for x in node.children if x.node_type == 'o']
-    #         if len(m_child) == 0:  # all children are optional
-    #             s = 0
-    #             for o in o_child:
-    #                 i_index = self.features.index(o)
-    #                 s += form[i_index]
-    #             form[index] = 1 if s > 0 else 0
-    #             return
-    #         for m in m_child:
-    #             i_index = self.features.index(m)
-    #             if form[i_index] == 0:
-    #                 form[index] = 0
-    #                 return
-    #         form[index] = 1
-    #         return
-    #
-    #     self.post_order(self.root, filling)
-    #
-    # def fill_subtree_0(self, subtree_root, fulfill):
-    #     """
-    #     Setting the subtree rooted by node zeros.
-    #     Fulfill vector will be modified
-    #     NOTHING WILL BE RETURNED
-    #     """
-    #
-    #     def fill_zero(node, fill_vec):
-    #         node_index = self.features.index(node)
-    #         fill_vec[node_index] = 0
-    #
-    #     self.post_order(subtree_root, fill_zero, [fulfill])
-
-    def get_subtree_index(self, subtree_root):
-        def fetch_indices(node, lst):
-            lst.append(self.find_fea_index(node))
-
-        lst = []
-        self.post_order(subtree_root, fetch_indices, [lst])
-        return lst
-
-    def get_subtree_index_dict(self):
-        for f_i, f in enumerate(self.features):
-            self.subtree_index_dict[f_i] = sorted(self.get_subtree_index(f))
-
     def get_feature_num(self):
         return len(self.features) - len(self.groups)
 
@@ -253,7 +191,7 @@ class FeatureTree(object):
 
         return height
 
-    def load_ft_from_url(ft, url):
+    def load_ft_from_url(self, url):
         if validators.url(url):
             url = urllib.urlopen(url)
         # load the feature tree and constraints
@@ -266,12 +204,12 @@ class FeatureTree(object):
             if child.tag == 'constraints':
                 constraints = child.text
         # parse the feature tree text
-        feas = feature_tree.split("\n")
-        feas = filter(bool, feas)
+        features = feature_tree.split("\n")
+        features = filter(bool, features)
         common_feature_pattern = re.compile('(\t*):([romg]?)(.*)\W(\w+)\W.*')
         group_pattern = re.compile('\t*:g \W(\w+)\W \W(\d),([\d\*])\W.*')
         layer_dict = dict()
-        for f in feas:
+        for f in features:
             m = common_feature_pattern.match(f)
             """
             m.group(1) layer
@@ -284,7 +222,7 @@ class FeatureTree(object):
             if t == 'r':
                 tree_root = Node(identification=m.group(4), name=m.group(3), node_type='r')
                 layer_dict[layer] = tree_root
-                ft._set_root(tree_root)
+                self._set_root(tree_root)
             elif t == 'g':
                 mg = group_pattern.match(f)
                 """
@@ -330,6 +268,47 @@ class FeatureTree(object):
              li_pos: whether is positive or each literals
             """
             con_stmt = Constraint(identification=con_id, literals=literal, literals_pos=li_pos)
-            ft._add_constraint(con_stmt)
+            self._add_constraint(con_stmt)
 
-        ft.set_features_list()
+        self.set_features_list()
+
+    def get_full_feature_configure_by_partial_def(self, given, type_of_return=list):
+        """
+        for all unassigned features, we use random assignment
+        :param given: typically assignments of all leaves
+        :param type_of_return: setting which type to return. can be list or dict
+        :return:
+        """
+        configure = {k: v for k, v in given.items()}
+        startat = time.time()
+        while len(configure) < len(self.features):
+            for feature in self.features:
+                if feature in configure:
+                    continue
+                if feature.node_type == '':  # the leave
+                    configure[feature] = random.choice([0, 1])
+                elif feature.node_type == 'm' or feature.node_type == 'r':
+                    configure[feature] = 1
+                elif feature.node_type == 'o':
+                    tmp = [configure[s] for s in feature.children if s in configure]
+                    if 1 in tmp:
+                        configure[feature] = 1
+                    elif len(tmp) == len(feature.children):
+                        configure[feature] = 0
+                elif feature.node_type == 'g':
+                    tmp = [configure[s] for s in feature.children if s in configure]
+                    if len(tmp) == len(feature.children):
+                        configure[feature] = 1 if feature.g_d <= sum(tmp) <= feature.g_u else 0
+
+            assert time.time() - startat < 15000, "please check this loop. not end"
+
+        if type_of_return == dict:
+            return configure
+        elif type_of_return == list:
+            con_lst = []
+            for feature in self.features:
+                con_lst.append(configure[feature])
+            return con_lst
+        else:
+            sys.stderr.wirte("check type_of_return input")
+            return configure
