@@ -4,6 +4,7 @@ import sys
 import time
 import urllib
 import xml.etree.ElementTree
+import pdb
 
 import validators
 
@@ -180,16 +181,17 @@ class FeatureTree(object):
         return len(self.con)
 
     def get_tree_height(self):
-        height = 1
-        for fea in self.features:
-            h = 0
-            cursor = fea
-            while cursor.parent:
-                h += 1
-                cursor = cursor.parent
-            height = max(height, h)
+        h_dict = dict()
 
-        return height
+        def inner(f):
+            if f.node_type == "" or not f.children:
+                h_dict[f] = 1
+            else:
+                h_dict[f] = max([h_dict[x] for x in f.children]) + 1
+
+        self.post_order(self.root, inner)
+
+        return h_dict[self.root]
 
     def load_ft_from_url(self, url):
         if validators.url(url):

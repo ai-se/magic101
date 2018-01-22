@@ -34,7 +34,8 @@ if __name__ == '__main__':
     # Step 1. Load SPLIT model. Use load_ft_from_url()
     # here url can be www url OR file path
 
-    url = "http://52.32.1.180:8080/SPLOT/models/model_20170930_228024571.xml"
+    # url = "http://52.32.1.180:8080/SPLOT/models/model_20170930_228024571.xml"
+    url = "./FeatureModel/tree_model.xml"
     ft = FeatureTree()
     ft.load_ft_from_url(url)
 
