@@ -100,8 +100,8 @@ class FeatureTree(object):
     def set_features_list(self):
         def setting_feature_list(node):
             if node.node_type == 'g':
-                node.g_u = int(node.g_u) if node.g_u != sys.maxint else len(node.children)
-                node.g_d = int(node.g_d) if node.g_d != sys.maxint else len(node.children)
+                node.g_u = int(node.g_u) if node.g_u != sys.maxsize else len(node.children)
+                node.g_d = int(node.g_d) if node.g_d != sys.maxsize else len(node.children)
                 self.features.append(node)
                 self.groups.append(node)
             if node.node_type != 'g':
@@ -235,7 +235,7 @@ class FeatureTree(object):
                 gNode = Node(identification=mg.group(1), name='g', parent=layer_dict[layer - 1], node_type='g')
                 layer_dict[layer] = gNode
                 if mg.group(3) == '*':
-                    gNode.g_u = sys.maxint
+                    gNode.g_u = sys.maxsize
                 else:
                     gNode.g_u = mg.group(3)
                 gNode.g_d = mg.group(2)
