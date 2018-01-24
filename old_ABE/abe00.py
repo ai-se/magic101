@@ -24,7 +24,7 @@ def abe0(meta, trainData, testData, neigbors):
     Y = trainData[meta.names()[-2:-1]]
     X = map(lambda x: list(x), X)
     Y = map(lambda x: list(x), Y)
-
+    pdb.set_trace()
     scaler1 = MinMaxScaler(copy=True, feature_range=(0, 1))
     scaler1.fit(X)
     xx = scaler1.transform(X)
@@ -83,5 +83,5 @@ def fold_validation(arff_file, learner, *args):
 
 
 if __name__ == '__main__':
-    accuracy_dist = fold_validation('effort_data/china.arff', abe0, 5)
+    accuracy_dist = fold_validation('data/china.arff', abe0, 5)
     print([round(i, 2) for i in accuracy_dist])
