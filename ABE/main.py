@@ -70,7 +70,7 @@ def abe_core(settings, train, test):
     # perform prediction (and similarity measures)
     y_predict = list()
     for test_row in test:
-        predict = settings.predict(test_row, train, settings.measure)
+        predict = settings.predict(test_row, train, settings.measure, settings.analogies)
         y_predict.append(predict)
 
     # print out errors
@@ -113,4 +113,9 @@ if __name__ == '__main__':
     for meta, train, test in KFoldSplit("data/albrecht.arff", 3):
         trainData = pd.DataFrame(data=train)
         testData = pd.DataFrame(data=test)
+
+        testrow = testData.iloc[0]
+        dists = ABE.measures.euclidean(testrow, trainData)
+        ABE.analogies.analogy_dynamic(dists, trainData, measures=ABE.measures.euclidean)
+
         abe_core(settings=settings, train=trainData, test=testData)
