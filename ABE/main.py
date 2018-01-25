@@ -109,10 +109,8 @@ def gen_setting_obj(configurations):
 
 
 if __name__ == '__main__':
-    settings = gen_setting_obj(['outlier'])
+    settings = gen_setting_obj(['outlier', 'minkowski'])
     for meta, train, test in KFoldSplit("data/albrecht.arff", 3):
         trainData = pd.DataFrame(data=train)
         testData = pd.DataFrame(data=test)
-        ABE.measures.local_weight(testData.iloc[0], trainData)
-        pdb.set_trace()
         abe_core(settings=settings, train=trainData, test=testData)

@@ -24,6 +24,7 @@
 
 from __future__ import division
 import numpy as np
+import pandas as pd
 import hashlib
 import pdb
 
@@ -83,8 +84,27 @@ def maximum_measure(row, train):
     return np.max(np.square(row - train), axis=1)
 
 
-def local_weight(row, train):
+def local_likelihood(row, train, k=-1):
+    # if k = -1, than use default value, i.e. len(train)*0.2
     # references frank et al. "Locally Weighted Naive Bayes"
-    #
-    
-    pdb.set_trace()
+    # requiring normalization
+    if k == -1:
+        k = int(train.shape[0] * 0.2)
+    res = euclidean(row, train)
+    threshold = sorted(res.tolist())[k]
+    res[res >= threshold] = 0
+    return res
+
+
+def minkowski(row, train, p=2):
+    # removing the last y value first
+    row = row[:-1]
+    train = train.iloc[:, :-1]
+    return np.sum((row - train) ** p, axis=1) ** (1 / p)
+
+
+def feature_mean_dist(row, train):
+    # removing the last y value first
+    row = row[:-1]
+    train = train.iloc[:, :-1]
+    return pd.Series(data=np.average(row) - np.average(train, axis=1))
