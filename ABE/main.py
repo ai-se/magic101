@@ -49,16 +49,18 @@ from __future__ import division
 import pandas as pd
 import pdb
 from utils.bunch import Object
-import ABE.subset
+import ABE.subSelector
 import ABE.measures
 import ABE.analogies
+import ABE.weighting
+import ABE.discretization
 
 from utils.kfold import KFoldSplit
 
 
 def abe_core(settings, train, test):
-    # apply case subset selectors
-    train = settings.subset(train)
+    # apply case subset subSelector
+    train = settings.subSelector(train)
 
     # apply weighting methods
     # TODO here
@@ -88,10 +90,10 @@ def gen_setting_obj(configurations):
     components = Object()
 
     # three case subset selectors
-    components.subset = ABE.subset.default
-    for subset in dir(ABE.subset):
-        if subset in configurations:
-            components.subset = getattr(ABE.subset, subset)
+    components.subSelector = ABE.subSelector.default
+    for subSelector in dir(ABE.subSelector):
+        if subSelector in configurations:
+            components.subSelector = getattr(ABE.subSelector, subSelector)
 
     # six similarity measures
     components.measures = ABE.measures.default
@@ -105,17 +107,30 @@ def gen_setting_obj(configurations):
         if analogies in configurations:
             components.analogies = getattr(ABE.analogies, analogies)
 
+    # eight feature weighting methods
+    components.weighting = ABE.weighting.default
+    for weighting in dir(ABE.weighting):
+        if weighting in configurations:
+            components.weighting = getattr(ABE.weighting, weighting)
+
+    # five discretization methods
+    components.discretization = ABE.discretization.default
+    for discretization in dir(ABE.discretization):
+        if discretization in configurations:
+            components.discretization = getattr(ABE.discretization, discretization)
+
     return components
 
 
 if __name__ == '__main__':
-    settings = gen_setting_obj(['outlier', 'minkowski'])
+    settings = gen_setting_obj(['outlier', 'maximum_measure', 'analogy_fix1'])
     for meta, train, test in KFoldSplit("data/albrecht.arff", 3):
         trainData = pd.DataFrame(data=train)
-        testData = pd.DataFrame(data=test)
+        ABE.discretization.default(trainData)
+        pdb.set_trace()
 
+        ABE.subSelector.default(trainData)
+        testData = pd.DataFrame(data=test)
         testrow = testData.iloc[0]
-        dists = ABE.measures.euclidean(testrow, trainData)
-        ABE.analogies.analogy_dynamic(dists, trainData, measures=ABE.measures.euclidean)
 
         abe_core(settings=settings, train=trainData, test=testData)

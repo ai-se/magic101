@@ -59,6 +59,22 @@ def analogy_fix5(dists, train):
     return _fixed(dists, train, 5)
 
 
+cache = dict()
+
+
+def analogy_dynamic(dists, train, measures):
+    # to avoid repeat computation, check for cache first
+    tid = hashlib.sha256(train.values.tobytes()).hexdigest()
+    if tid in cache:
+        bestK = cache[tid]
+    else:
+        # tune the k
+        bestK = _tuneK(train, measures)
+        cache[tid] = bestK
+
+    return _fixed(dists, train, bestK)
+
+
 def _fixed(dists, train, k):
     info = [(d, v) for d, v in zip(dists.tolist(), train.iloc[:, -1].tolist())]
     info.sort(key=lambda i: i[0])
@@ -98,19 +114,3 @@ def _tuneK(train, measures):
             _current_min = e
         print(e, k)
     return res
-
-
-cache = dict()
-
-
-def analogy_dynamic(dists, train, measures):
-    # to avoid repeat computation, check for cache first
-    tid = hashlib.sha256(train.values.tobytes()).hexdigest()
-    if tid in cache:
-        bestK = cache[tid]
-    else:
-        # tune the k
-        bestK = _tuneK(train, measures)
-        cache[tid] = bestK
-
-    return _fixed(dists, train, bestK)
