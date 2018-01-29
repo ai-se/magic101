@@ -25,10 +25,13 @@
 from __future__ import division
 import pandas as pd
 import numpy as np
+import warnings
+import sys
 import pdb
 
 """
 Five discretization Methods
+Discretization will also perform over last column, i.e. the y-value
 Input:
 - pd.dataframe
 Output:
@@ -38,7 +41,7 @@ Output:
 
 
 def default(df):
-    return entropy(df)
+    return equal_width(df)
 
 
 def do_nothing(df):
@@ -86,11 +89,11 @@ def equal_width(df, groupSize=10):
 
 def entropy(df):
     """
-    # reference: Yang et al. "A comparative Study of Discretization Methods for Naive-Bayes Classifiers"
-    referece: Fayyad et al. "Multi-Interval Discretization of Continous-Valued Attributes for Classification Learning"
+    referece: Fayyad et al. "Multi-Interval Discretization of Continuous-Valued Attributes for Classification Learning"
     :param df:
     :return:
     """
+
     def calc_ent(vect):
         """
         Calculate the differential entropy. reference https://www2.isye.gatech.edu/~yxie77/ece587/Lecture17.pdf
@@ -99,6 +102,16 @@ def entropy(df):
         """
         integers = map(int, vect)
 
+    # TODO here
+    warnings.warn("Currently entropy based discretization is NOT available. Will apply equal width")
+    return equal_width(df)
 
 
+def pkid(df):
+    """
+    reference: Yang et al. "A comparative Study of Discretization Methods for Naive-Bayes Classifiers"
+    :param df:
+    :return:
+    """
+    # TODO here
     pdb.set_trace()
