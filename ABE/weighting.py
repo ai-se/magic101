@@ -317,3 +317,15 @@ def wrapper_subset(df):
     selected_features = best[1] + [target]
 
     return df[selected_features]
+
+
+def genetic_weighting(df):
+    """
+    THIS METHOD WILL CREATE A NEW DATAFRAME
+    :param df:
+    :return:
+    """
+
+    # TODO
+
+    return weights * df
