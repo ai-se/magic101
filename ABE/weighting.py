@@ -24,6 +24,10 @@
 
 from __future__ import division
 from sklearn.decomposition import PCA
+from utils.kfold import KFoldSplit_df
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error
+import warnings
 import pandas as pd
 import math
 import numpy as np
@@ -32,7 +36,6 @@ import random
 import pdb
 import time
 import ABE.measures
-import utils.debug
 
 """
 Eight Feature Weighting Methods
@@ -48,7 +51,7 @@ returned weights are **NOT** necessary to be normalized
 
 
 def default(df):
-    return consistency_subset(df)
+    return wrapper_subset(df)
 
 
 def _ent(data):
@@ -188,19 +191,16 @@ def cfs(df):
         k = len(fs)
         return k * r_cf / math.sqrt(k + (k - 1) * r_ff)
 
-    # feature_subset = pd.Series(features).sample(3)  # for debugging use
-    # p = merit_S(fs=feature_subset, cf=cf, ff=ff)
-
     # use stochastic search algorithm to figure out best subsets
     # features subsets are encoded as [0/1]^F
-    # use multiple starting
 
     hc_starts_at = time.time()
     lst_improve_at = time.time()
     best = [0, None]
     while time.time() - lst_improve_at < 1 or time.time() - hc_starts_at < 5:
-        # during of hill climbing -> at most 5 seconds. if no improve by 1 second, then stop
+        # during of random search -> at most 5 seconds. if no improve by 1 second, then stop
         selects = [random.choice([0, 1]) for _ in range(len(features))]
+        if not sum(selects): continue
         fs = [features[i] for i, v in enumerate(selects) if v]
         score = merit_S(fs, cf, ff)
         if score > best[0]:
@@ -252,8 +252,9 @@ def consistency_subset(df):
     lst_improve_at = time.time()
     best = [0, None]
     while time.time() - lst_improve_at < 1 or time.time() - hc_starts_at < 5:
-        # during of hill climbing -> at most 5 seconds. if no improve by 1 second, then stop
+        # during of random search -> at most 5 seconds. if no improve by 1 second, then stop
         selects = [random.choice([0, 1]) for _ in range(len(features))]
+        if not sum(selects): continue
         fs = [features[i] for i, v in enumerate(selects) if v]
         score = consistency(df[fs], df[target])
         if score > best[0]:
@@ -269,8 +270,50 @@ def wrapper_subset(df):
     - Wrapper Subset Evaluation
     - Reference: sect 2.6 of hall et al. "Benchmarking Attribute Selection Techniques for Discrete Class Data Mining"
     - Here we use linear regression to figure out best feature subsets. why linear regression? simple. effective
-    -
+    - no need to normalization
     :param df:
     :return:
     """
+    warnings.filterwarnings(action="ignore", module="scipy",
+                            message="^internal gelsd")  # https://github.com/scipy/scipy/issues/5998
 
+    def predict_error(df):
+        """
+        - use linear regression to make prediction
+        - 5 crossover validation
+        - returns errors which to be **minimized**
+        :param df: with y-value at the end of that
+        :return:
+        """
+
+        errors = list()
+        for train, test in KFoldSplit_df(df, 5):
+            trainX, trainY = train.iloc[:, :-1], train.iloc[:, -1]
+            testX, testY = test.iloc[:, :-1], test.iloc[:, -1]
+            predicts = LinearRegression().fit(trainX, trainY).predict(testX)
+            error = mean_absolute_error(testY, predicts)
+            errors.append(error)
+        return sum(errors) / len(errors)
+
+    features = df.columns[:-1]
+    target = df.columns[-1]
+
+    # use stochastic search algorithm to figure out best subsets
+    # features subsets are encoded as [0/1]^F
+
+    hc_starts_at = time.time()
+    lst_improve_at = time.time()
+    best = [float('inf'), None]
+    while time.time() - lst_improve_at < 1 or time.time() - hc_starts_at < 5:
+        # during of random search -> at most 5 seconds. if no improve by 1 second, then stop
+        selects = [random.choice([0, 1]) for _ in range(len(features))]
+        if not sum(selects): continue
+        fs = [features[i] for i, v in enumerate(selects) if v]
+        score = predict_error(df[fs + [target]])
+        if score < best[0]:
+            best = [score, fs]
+            lst_improve_at = time.time()
+
+    selected_features = best[1] + [target]
+
+    return df[selected_features]

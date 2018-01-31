@@ -25,7 +25,9 @@
 from __future__ import division
 from scipy.io import arff
 from sklearn.model_selection import KFold
+from sklearn.utils import shuffle
 import random
+import pdb
 
 
 def KFoldSplit(arff_file_name, folds=3):
@@ -45,3 +47,13 @@ def KFoldSplit(arff_file_name, folds=3):
         trainData = data[train]
         testData = data[test]
         yield (meta, trainData, testData)
+
+
+def KFoldSplit_df(df, folds=3):
+    kf = KFold(n_splits=folds)
+    df = shuffle(df)
+
+    for train, test in kf.split(df.index):
+        trainData = df.iloc[train]
+        testData = df.iloc[test]
+        yield trainData, testData
