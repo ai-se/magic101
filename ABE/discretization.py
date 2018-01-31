@@ -41,7 +41,7 @@ Output:
 
 
 def default(df):
-    return equal_width(df)
+    return equal_frequency(df)
 
 
 def do_nothing(df):
@@ -56,7 +56,7 @@ def equal_frequency(df, groupSize=3):
     :return:
     """
     for c_i in range(df.shape[1]):
-        maps = pd.qcut(df.iloc[:, c_i], groupSize)
+        maps = pd.qcut(df.iloc[:, c_i].rank(method='first'), groupSize)
         map_v = np.zeros([df.shape[0], 1])
         for r_i, m in enumerate(maps):
             x, y = m[1:-1].split(',')

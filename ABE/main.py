@@ -48,7 +48,6 @@ from __future__ import division
 
 import pandas as pd
 import pdb
-from utils.bunch import Object
 import ABE.subSelector
 import ABE.measures
 import ABE.analogies
@@ -56,6 +55,7 @@ import ABE.weighting
 import ABE.discretization
 
 from utils.kfold import KFoldSplit
+from utils.bunch import Object
 
 
 def abe_core(settings, train, test):
@@ -66,7 +66,7 @@ def abe_core(settings, train, test):
     # TODO here
 
     # apply discreatization
-    train = settings.discrete(train)
+    train = settings.discreate(train)
     test = settings.discreate(test)
 
     # perform prediction (and similarity measures)
@@ -124,7 +124,7 @@ def gen_setting_obj(configurations):
 
 if __name__ == '__main__':
     settings = gen_setting_obj(['outlier', 'maximum_measure', 'analogy_fix1'])
-    for meta, train, test in KFoldSplit("data/albrecht.arff", 3):
+    for meta, train, test in KFoldSplit("data/maxwell.arff", 3):
         trainData = pd.DataFrame(data=train)
         ABE.weighting.default(ABE.discretization.default(trainData))
         pdb.set_trace()

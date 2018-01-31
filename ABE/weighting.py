@@ -28,7 +28,9 @@ import pandas as pd
 import math
 import numpy as np
 import scipy as sc
+import random
 import pdb
+import time
 import ABE.measures
 import utils.debug
 
@@ -37,19 +39,21 @@ Eight Feature Weighting Methods
 note (by jf.chen)- here feature weighting includes feature selection
 
 input is a pd.dataframe
-output weights of each feature. type=pandas.core.frame.DataFrame
+output weighted dataframe. type=pd.dataframe
+
+rows will not shuffled.
 
 returned weights are **NOT** necessary to be normalized
 """
 
 
 def default(df):
-    return principal_component(df)
+    return consistency_subset(df)
 
 
 def _ent(data):
     """
-    # Input a pandas series
+    # Input a pandas series. calculate the entropy of series
     :param data:
     :return:
     """
@@ -82,7 +86,10 @@ def gain_rank(df):
             weights.loc[0, a] += -1 * selected_a.shape[0] / df.shape[0] * sub
 
     weights = H_C - weights
-    return weights
+    weights[df.columns[-1]] = 1
+    weights = weights.append([weights] * (df.shape[0] - 1), ignore_index=True)
+
+    return weights * df
 
 
 def relief(df, measures=ABE.measures.default):
@@ -114,7 +121,10 @@ def relief(df, measures=ABE.measures.default):
 
     weights = weights.drop(df.columns[-1], axis=1)
     weights = np.abs(weights)
-    return weights
+    weights[df.columns[-1]] = 1
+    weights = weights.append([weights] * (df.shape[0] - 1), ignore_index=True)
+
+    return weights * df
 
 
 def principal_component(df):
@@ -138,10 +148,129 @@ def principal_component(df):
 
 def cfs(df):
     """
-    CFS = Correlation-based Feature Selection
-    reference: sect 2.4 of hall et al. "Benchmarking Attribute Selection Techniques for Discrete Class Data Mining"
+    - CFS = Correlation-based Feature Selection
+    - reference: sect 2.4 of hall et al. "Benchmarking Attribute Selection Techniques for Discrete Class Data Mining"
+    reference2: Hall et al. "Correlation-based Feature Selection for Discrete and Numeric Class Machine Learning"
+    - Good feature subsets contain features highly corrleated with the calss, yet uncorrelated with each other.
+    - random search is applied for figure out best feature subsets
     :param df:
     :return:
     """
-    # TODO here...
-    return principal_component(df)
+
+    features = df.columns[:-1]
+    target = df.columns[-1]
+    cf = pd.DataFrame(data=np.zeros([1, df.shape[1] - 1]), columns=features, index=df.columns[-1:])
+    ff = pd.DataFrame(data=np.zeros([len(features), len(features)]), index=features, columns=features)
+
+    # fill in cf
+    for attr in cf.columns:
+        cf.set_value(target, attr, abs(df[attr].corr(df[target], method='pearson')))
+
+    # fill in ff
+    for attr1 in ff.index:
+        for attr2 in ff.columns:
+            if attr1 == attr2: continue
+            if ff.get_value(attr1, attr2): continue
+            corr = abs(df[attr1].corr(df[attr2], method='pearson'))
+            ff.set_value(attr1, attr2, corr)
+            ff.set_value(attr2, attr1, corr)
+
+    def merit_S(fs, cf, ff):
+        """
+        Calculate the heuristic (to maximize) according to Ghiselli 1964. eq1 in ref2
+        :param ff:
+        :param cf:
+        :param fs: feature_subset names
+        :return:
+        """
+        r_cf = cf[fs].mean().mean()
+        r_ff = ff.loc[fs, fs].mean().mean()
+        k = len(fs)
+        return k * r_cf / math.sqrt(k + (k - 1) * r_ff)
+
+    # feature_subset = pd.Series(features).sample(3)  # for debugging use
+    # p = merit_S(fs=feature_subset, cf=cf, ff=ff)
+
+    # use stochastic search algorithm to figure out best subsets
+    # features subsets are encoded as [0/1]^F
+    # use multiple starting
+
+    hc_starts_at = time.time()
+    lst_improve_at = time.time()
+    best = [0, None]
+    while time.time() - lst_improve_at < 1 or time.time() - hc_starts_at < 5:
+        # during of hill climbing -> at most 5 seconds. if no improve by 1 second, then stop
+        selects = [random.choice([0, 1]) for _ in range(len(features))]
+        fs = [features[i] for i, v in enumerate(selects) if v]
+        score = merit_S(fs, cf, ff)
+        if score > best[0]:
+            best = [score, fs]
+            lst_improve_at = time.time()
+
+    selected_features = best[1] + [target]
+
+    return df[selected_features]
+
+
+def consistency_subset(df):
+    """
+    - Consistency-Based Subset Evaluation
+    - Subset evaluator use Liu and Setino's consistency metric
+    - reference: sect 2.5 of hall et al. "Benchmarking Attribute Selection Techniques for Discrete Class Data Mining"
+
+    - requires: discreatization
+    :param df:
+    :return:
+    """
+
+    def consistency(sdf, classes):
+        """
+        Calculate the consistency of feature subset, which will be maximized
+        :param sdf: dataframe regrading to a subset feature
+        :return:
+        """
+        sdf = sdf.join(classes)
+        uniques = sdf.drop_duplicates()
+        target = classes.name
+
+        subsum = 0
+
+        for i in range(uniques.shape[0] - 1):
+            row = uniques.iloc[i]
+            matches = sdf[sdf == row].dropna()
+            if matches.shape[0] <= 1: continue
+            D = matches.shape[0]
+            M = matches[matches[target] == float(matches.mode()[target])].shape[0]
+            subsum += (D - M)
+
+        return 1 - subsum / sdf.shape[0]
+
+    features = df.columns[:-1]
+    target = df.columns[-1]
+
+    hc_starts_at = time.time()
+    lst_improve_at = time.time()
+    best = [0, None]
+    while time.time() - lst_improve_at < 1 or time.time() - hc_starts_at < 5:
+        # during of hill climbing -> at most 5 seconds. if no improve by 1 second, then stop
+        selects = [random.choice([0, 1]) for _ in range(len(features))]
+        fs = [features[i] for i, v in enumerate(selects) if v]
+        score = consistency(df[fs], df[target])
+        if score > best[0]:
+            best = [score, fs]
+            lst_improve_at = time.time()
+
+    selected_features = best[1] + [target]
+    return df[selected_features]
+
+
+def wrapper_subset(df):
+    """
+    - Wrapper Subset Evaluation
+    - Reference: sect 2.6 of hall et al. "Benchmarking Attribute Selection Techniques for Discrete Class Data Mining"
+    - Here we use linear regression to figure out best feature subsets. why linear regression? simple. effective
+    -
+    :param df:
+    :return:
+    """
+
