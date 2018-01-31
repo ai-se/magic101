@@ -51,7 +51,7 @@ returned weights are **NOT** necessary to be normalized
 
 
 def default(df):
-    return wrapper_subset(df)
+    return gain_rank(df)
 
 
 def _ent(data):

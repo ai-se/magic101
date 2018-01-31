@@ -41,7 +41,7 @@ Output:
 
 
 def default(df):
-    return equal_frequency(df)
+    return equal_width(df)
 
 
 def do_nothing(df):
@@ -59,9 +59,8 @@ def equal_frequency(df, groupSize=3):
         maps = pd.qcut(df.iloc[:, c_i].rank(method='first'), groupSize)
         map_v = np.zeros([df.shape[0], 1])
         for r_i, m in enumerate(maps):
-            x, y = m[1:-1].split(',')
-            x = float(x)
-            y = float(y)
+            x = m.left
+            y = m.right
             map_v[r_i] = (y + x) / 2
         df.iloc[:, c_i] = map_v
     return df
@@ -78,9 +77,8 @@ def equal_width(df, groupSize=10):
         maps = pd.cut(df.iloc[:, c_i], groupSize)
         map_v = np.zeros([df.shape[0], 1])
         for r_i, m in enumerate(maps):
-            x, y = m[1:-1].split(',')
-            x = float(x)
-            y = float(y)
+            x = m.left
+            y = m.right
             map_v[r_i] = (y + x) / 2
         df.iloc[:, c_i] = map_v
 

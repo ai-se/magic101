@@ -123,14 +123,9 @@ def gen_setting_obj(configurations):
 
 
 if __name__ == '__main__':
-    settings = gen_setting_obj(['outlier', 'maximum_measure', 'analogy_fix1'])
+    settings = gen_setting_obj(['outlier', 'maximum_measure', 'analogy_fix1', 'cfs'])
     for meta, train, test in KFoldSplit("data/albrecht.arff", 3):
         trainData = pd.DataFrame(data=train)
-        ABE.weighting.default(ABE.discretization.default(trainData))
-        pdb.set_trace()
-
-        ABE.subSelector.default(trainData)
         testData = pd.DataFrame(data=test)
-        testrow = testData.iloc[0]
 
         abe_core(settings=settings, train=trainData, test=testData)
