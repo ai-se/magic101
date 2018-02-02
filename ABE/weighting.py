@@ -41,7 +41,6 @@ import pdb
 import time
 import ABE.measures
 
-
 """
 Eight Feature Weighting Methods
 note (by jf.chen)- here feature weighting includes feature selection
@@ -345,7 +344,8 @@ def genetic_weighting(df):
         return [arr[i:i + n] for i in range(0, len(arr), n)]
 
     def trans_weights2(popn):
-        a = []; b = []; c = []
+        a, b, c = list(), list(), list()
+
         for i in range(len(popn)):
             a.append(chunks(popn[i], 14))
 
@@ -359,8 +359,8 @@ def genetic_weighting(df):
         return c
 
     def fitness_function(df, w=1):
-        X = df[meta.names()[:-1]]
-        Y = df[meta.names()[-1:]]
+        X = df.iloc[:, :-1]
+        Y = df.iloc[:, -1:]
 
         X_W = X * w
 
@@ -388,44 +388,32 @@ def genetic_weighting(df):
     random.seed()
 
     pop = toolbox.population(n=10)
-
     CXPB, MUTPB = 0.7, 0.1
-
     temp_list = list(map(toolbox.evaluate, pop))
-
     fitnesses = list(zip(temp_list, ))
 
     for ind, fit in zip(pop, fitnesses):
         ind.fitness.values = fit
 
-    fits = [ind.fitness.values[0] for ind in pop]
+    # fits = [ind.fitness.values[0] for ind in pop]
 
-    g = 0
-
-    while g < 100:
-
-        g = g + 1
-
+    for g in range(100):
         offspring = toolbox.select(pop, len(pop))
-
         offspring = list(map(toolbox.clone, offspring))
 
         for child1, child2 in zip(offspring[::2], offspring[1::2]):
-
             if random.random() < CXPB:
                 toolbox.mate(child1, child2)
-
                 del child1.fitness.values
                 del child2.fitness.values
 
         for mutant in offspring:
-
             if random.random() < MUTPB:
                 toolbox.mutate(mutant)
                 del mutant.fitness.values
 
         invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
-        fitnesses = map(toolbox.evaluate, invalid_ind)
+        map(toolbox.evaluate, invalid_ind)
         temp_list = list(map(toolbox.evaluate, invalid_ind))
 
         fitnesses0 = list(zip(temp_list, ))
@@ -435,10 +423,11 @@ def genetic_weighting(df):
 
         pop[:] = offspring
 
-        fits = [ind.fitness.values[0] for ind in pop]
+        # fits = [ind.fitness.values[0] for ind in pop]
 
     best_ind = tools.selBest(pop, 1)[0]
 
     final_weights = trans_weights2([best_ind])
+    final_weights.append(1)
 
-    return final_weights
+    return df * final_weights

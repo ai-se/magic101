@@ -126,6 +126,7 @@ if __name__ == '__main__':
     settings = gen_setting_obj(['outlier', 'maximum_measure', 'analogy_fix1', 'cfs'])
     for meta, train, test in KFoldSplit("data/albrecht.arff", 3):
         trainData = pd.DataFrame(data=train)
+        ABE.weighting.genetic_weighting(trainData)
         testData = pd.DataFrame(data=test)
 
         abe_core(settings=settings, train=trainData, test=testData)
