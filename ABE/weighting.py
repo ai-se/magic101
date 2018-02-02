@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Copyright (C) 2018, Jianfeng Chen <jchen37@ncsu.edu>
+# Copyright (C) 2018, Jianfeng Chen <jchen37@ncsu.edu>, Tianpei Xia <txia4@ncsu.edu>
 # vim: set ts=4 sts=4 sw=4 expandtab smartindent:
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,9 +24,13 @@
 
 from __future__ import division
 from sklearn.decomposition import PCA
-from utils.kfold import KFoldSplit_df
+from utils.kfold import KFoldSplit_df, KFoldSplit
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error
+from deap import base
+from deap import creator
+from deap import tools
+from sklearn.neighbors import KNeighborsRegressor
 import warnings
 import pandas as pd
 import math
@@ -36,6 +40,7 @@ import random
 import pdb
 import time
 import ABE.measures
+
 
 """
 Eight Feature Weighting Methods
@@ -326,6 +331,114 @@ def genetic_weighting(df):
     :return:
     """
 
-    # TODO
+    n = len(df.columns) - 1
 
-    return weights * df
+    creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+    creator.create("Individual", list, fitness=creator.FitnessMax)
+
+    toolbox = base.Toolbox()
+    toolbox.register("attr_bool", random.randint, 0, 1)
+    toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_bool, 14 * n)
+    toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+
+    def chunks(arr, n):
+        return [arr[i:i + n] for i in range(0, len(arr), n)]
+
+    def trans_weights2(popn):
+        a = []; b = []; c = []
+        for i in range(len(popn)):
+            a.append(chunks(popn[i], 14))
+
+        for i in range(len(a)):
+            for j in range(len(a[0])):
+                b.append(''.join(map(str, a[i][j])))
+
+        for i in range(len(b)):
+            c.append(round(int(b[i], 2) / 16383, 4))
+
+        return c
+
+    def fitness_function(df, w=1):
+        X = df[meta.names()[:-1]]
+        Y = df[meta.names()[-1:]]
+
+        X_W = X * w
+
+        clf = KNeighborsRegressor(n_neighbors=5)
+        clf.fit(X_W, Y)
+
+        Y_predict = clf.predict(X_W)
+        Y_predict = [i[0] for i in Y_predict]
+        Y_actual = np.ravel(Y)
+
+        MRE = abs(Y_actual - Y_predict) / Y_actual
+        MMRE = sum(MRE) / len(MRE)
+        f = 1 / MMRE
+        return f
+
+    def eval_max(individual):
+        w = trans_weights2([individual])
+        f = fitness_function(df, w)
+        return f
+
+    toolbox.register("evaluate", eval_max)
+    toolbox.register("mate", tools.cxOnePoint)
+    toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
+    toolbox.register("select", tools.selRoulette)
+    random.seed()
+
+    pop = toolbox.population(n=10)
+
+    CXPB, MUTPB = 0.7, 0.1
+
+    temp_list = list(map(toolbox.evaluate, pop))
+
+    fitnesses = list(zip(temp_list, ))
+
+    for ind, fit in zip(pop, fitnesses):
+        ind.fitness.values = fit
+
+    fits = [ind.fitness.values[0] for ind in pop]
+
+    g = 0
+
+    while g < 100:
+
+        g = g + 1
+
+        offspring = toolbox.select(pop, len(pop))
+
+        offspring = list(map(toolbox.clone, offspring))
+
+        for child1, child2 in zip(offspring[::2], offspring[1::2]):
+
+            if random.random() < CXPB:
+                toolbox.mate(child1, child2)
+
+                del child1.fitness.values
+                del child2.fitness.values
+
+        for mutant in offspring:
+
+            if random.random() < MUTPB:
+                toolbox.mutate(mutant)
+                del mutant.fitness.values
+
+        invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
+        fitnesses = map(toolbox.evaluate, invalid_ind)
+        temp_list = list(map(toolbox.evaluate, invalid_ind))
+
+        fitnesses0 = list(zip(temp_list, ))
+
+        for ind, fit in zip(invalid_ind, fitnesses0):
+            ind.fitness.values = fit
+
+        pop[:] = offspring
+
+        fits = [ind.fitness.values[0] for ind in pop]
+
+    best_ind = tools.selBest(pop, 1)[0]
+
+    final_weights = trans_weights2([best_ind])
+
+    return final_weights
