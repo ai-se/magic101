@@ -61,10 +61,6 @@ import ABE.adaptation
 from utils.kfold import KFoldSplit
 from utils.bunch import Object
 
-logging.basicConfig(stream=sys.stdout,
-                    format='[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
-                    level=logging.DEBUG)
-
 
 def abe_execute(S, train, test):
     """
@@ -97,18 +93,23 @@ def abe_execute(S, train, test):
     Y_predict, Y_actual = list(), list()
     for index, test_row in test.iterrows():
         dists = S.measures(test_row, train)
-        closest = S.analogies(dists, train, measures=S.measures)
-        Y_predict.append(S.adaptation(closest))
+        closest, c_dists = S.analogies(dists, train, measures=S.measures)
+        Y_predict.append(S.adaptation(closest, test_row, c_dists))
         Y_actual.append(test_row[-1])
 
     logging.debug("Get median relative errors")
     err = 0
     y_range = max(Y_actual) - min(Y_actual)
+
+    if y_range < 1e-3:
+        y_range = 1
+
     for predict, actual in zip(Y_predict, Y_actual):
         err += abs(predict - actual) / y_range
     RMSE = err / test.shape[0]  # relative median standard error
 
     logging.debug("\n\n*************** RMSE = {0:.0f}%*********\n\n\n".format(RMSE * 100))
+
     return RMSE
 
 
@@ -155,8 +156,14 @@ def gen_setting_obj(S_str):
 
 
 if __name__ == '__main__':
-    settings = gen_setting_obj(['outlier', 'maximum_measure', 'analogy_fix5'])
-    for meta, train, test in KFoldSplit("data/maxwell.arff", 3):
+    logging.basicConfig(stream=sys.stdout,
+                        format='[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
+                        level=logging.DEBUG)
+
+    settings = gen_setting_obj(
+        ['outlier', 'maximum_measure', 'analogy_dynamic', 'weighted_mean'])
+
+    for meta, train, test in KFoldSplit("data/maxwell.arff", folds=10):
         trainData = pd.DataFrame(data=train)
         testData = pd.DataFrame(data=test)
-        abe_execute(S=settings, train=trainData, test=testData)
+        RMSE = abe_execute(S=settings, train=trainData, test=testData)

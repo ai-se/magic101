@@ -34,7 +34,10 @@ input:
   dists - one pandas.core.series.Series. distances from test row to each train
   train - pandas.dataframe. INCLUDING Y value
   measures - one of function in ABE.measures
-output: pandas.dataFrame. closest targets inside the train
+output:
+- pandas.dataFrame. closest targets inside the train
+- distances: a list
+
 """
 
 
@@ -74,7 +77,6 @@ def analogy_dynamic(dists, train, measures=ABE.measures.default):
         # tune the k
         bestK = _tuneK(train, measures)
         cache[tid] = bestK
-
     return _fixed(dists, train, bestK)
 
 
@@ -82,11 +84,14 @@ def _fixed(dists, train, k):
     info = [(d, r) for d, (i, r) in zip(dists.tolist(), train.iterrows())]
     info.sort(key=lambda i: i[0])
     cares = [i[1] for i in info[:k]]
-    return pd.DataFrame(cares)
+    res = pd.DataFrame(cares)
+    c_dists = [i[0] for i in info[:k]]
+
+    return res, c_dists
 
 
 def _tuneK(train, measures):
-    logging.DEBUG("Tuning K")
+    logging.debug("Tuning K")
     # limit the data size of train as 50. otherwise randomly prune some
     if train.shape[0] > 50:
         train = train.sample(n=50)
@@ -116,5 +121,4 @@ def _tuneK(train, measures):
         if e < _current_min:
             res = k
             _current_min = e
-        print(e, k)
     return res
