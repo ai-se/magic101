@@ -46,6 +46,8 @@
 
 from __future__ import division
 
+import logging
+import sys
 import pandas as pd
 import pdb
 import ABE.subSelector
@@ -53,80 +55,108 @@ import ABE.measures
 import ABE.analogies
 import ABE.weighting
 import ABE.discretization
+import ABE.normalize
+import ABE.adaptation
 
 from utils.kfold import KFoldSplit
 from utils.bunch import Object
 
-
-def abe_core(settings, train, test):
-    # apply case subset subSelector
-    train = settings.subSelector(train)
-
-    # apply weighting methods
-    # TODO here
-
-    # apply discreatization
-    train = settings.discreate(train)
-    test = settings.discreate(test)
-
-    # perform prediction (and similarity measures)
-    y_predict = list()
-    for test_row in test:
-        predict = settings.predict(test_row, train, settings.measure, settings.analogies)
-        y_predict.append(predict)
-
-    # print out errors
-    y_actual = test[test.columns[-1]]
-    m = 0
-    for predict, actual in zip(y_predict, y_actual):
-        if predict == actual:
-            m += 1
-    accuracy = m / (len(y_actual))
-
-    return accuracy
+logging.basicConfig(stream=sys.stdout,
+                    format='[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
+                    level=logging.DEBUG)
 
 
-def gen_setting_obj(configurations):
-    components = Object()
+def abe_execute(S, train, test):
+    """
+    executing the ABE method
+    :param S:
+    :param train:
+    :param test:
+    :return:
+    """
+    logging.debug("Sub selection")
+    train = S.subSelector(train)
+
+    n_train, n_test = train.shape[0], test.shape[0]
+    combined = pd.concat([train, test])
+
+    logging.debug("Normalization")
+    combined = ABE.normalize.normalize(combined)
+
+    logging.debug("Discretization")
+    combined = S.discretization(combined)
+
+    logging.debug("Feature weighting")
+    combined = S.weighting(combined)
+
+    # separate train and test
+    train = combined.iloc[:n_train, :]
+    test = combined.iloc[n_train:, :]
+
+    logging.debug("Predicting")
+    Y_predict, Y_actual = list(), list()
+    for index, test_row in test.iterrows():
+        dists = S.measures(test_row, train)
+        closest = S.analogies(dists, train, measures=S.measures)
+        Y_predict.append(S.adaptation(closest))
+        Y_actual.append(test_row[-1])
+
+    logging.debug("Get median relative errors")
+    err = 0
+    y_range = max(Y_actual) - min(Y_actual)
+    for predict, actual in zip(Y_predict, Y_actual):
+        err += abs(predict - actual) / y_range
+    RMSE = err / test.shape[0]  # relative median standard error
+
+    logging.debug("\n\n*************** RMSE = {0:.0f}%*********\n\n\n".format(RMSE * 100))
+    return RMSE
+
+
+def gen_setting_obj(S_str):
+    S = Object()
 
     # three case subset selectors
-    components.subSelector = ABE.subSelector.default
+    S.subSelector = ABE.subSelector.default
     for subSelector in dir(ABE.subSelector):
-        if subSelector in configurations:
-            components.subSelector = getattr(ABE.subSelector, subSelector)
+        if subSelector in S_str:
+            S.subSelector = getattr(ABE.subSelector, subSelector)
 
     # six similarity measures
-    components.measures = ABE.measures.default
+    S.measures = ABE.measures.default
     for measures in dir(ABE.measures):
-        if measures in configurations:
-            components.measures = getattr(ABE.measures, measures)
+        if measures in S_str:
+            S.measures = getattr(ABE.measures, measures)
 
     # six ways to select analogies
-    components.analogies = ABE.analogies.default
+    S.analogies = ABE.analogies.default
     for analogies in dir(ABE.analogies):
-        if analogies in configurations:
-            components.analogies = getattr(ABE.analogies, analogies)
+        if analogies in S_str:
+            S.analogies = getattr(ABE.analogies, analogies)
 
     # eight feature weighting methods
-    components.weighting = ABE.weighting.default
+    S.weighting = ABE.weighting.default
     for weighting in dir(ABE.weighting):
-        if weighting in configurations:
-            components.weighting = getattr(ABE.weighting, weighting)
+        if weighting in S_str:
+            S.weighting = getattr(ABE.weighting, weighting)
 
     # five discretization methods
-    components.discretization = ABE.discretization.default
+    S.discretization = ABE.discretization.default
     for discretization in dir(ABE.discretization):
-        if discretization in configurations:
-            components.discretization = getattr(ABE.discretization, discretization)
+        if discretization in S_str:
+            S.discretization = getattr(ABE.discretization, discretization)
 
-    return components
+    # four adaptation methods
+    S.adaptation = ABE.adaptation.default
+    for adaptation in dir(ABE.adaptation):
+        if adaptation in S_str:
+            S.adaptation = getattr(ABE.adaptation, adaptation)
+
+    return S
 
 
 if __name__ == '__main__':
-    settings = gen_setting_obj(['outlier', 'maximum_measure', 'analogy_fix1', 'cfs'])
-    for meta, train, test in KFoldSplit("data/albrecht.arff", 3):
+    settings = gen_setting_obj(['outlier', 'maximum_measure', 'analogy_fix5'])
+    for meta, train, test in KFoldSplit("data/maxwell.arff", 3):
         trainData = pd.DataFrame(data=train)
-        ABE.weighting.genetic_weighting(trainData)
         testData = pd.DataFrame(data=test)
-
-        abe_core(settings=settings, train=trainData, test=testData)
+        abe_execute(S=settings, train=trainData, test=testData)

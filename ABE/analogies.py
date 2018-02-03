@@ -25,44 +25,47 @@ from __future__ import division
 import numpy as np
 import pandas as pd
 import hashlib
+import ABE.measures
+import logging
 import pdb
 
 """
 input:
   dists - one pandas.core.series.Series. distances from test row to each train
   train - pandas.dataframe. INCLUDING Y value
-output: predictions for test row. type=float
+  measures - one of function in ABE.measures
+output: pandas.dataFrame. closest targets inside the train
 """
 
 
-def default(dists, train):
+def default(dists, train, measures=None):
     return analogy_fix1(dists, train)
 
 
-def analogy_fix1(dists, train):
+def analogy_fix1(dists, train, measures=None):
     return _fixed(dists, train, 1)
 
 
-def analogy_fix2(dists, train):
+def analogy_fix2(dists, train, measures=None):
     return _fixed(dists, train, 2)
 
 
-def analogy_fix3(dists, train):
+def analogy_fix3(dists, train, measures=None):
     return _fixed(dists, train, 3)
 
 
-def analogy_fix4(dists, train):
+def analogy_fix4(dists, train, measures=None):
     return _fixed(dists, train, 4)
 
 
-def analogy_fix5(dists, train):
+def analogy_fix5(dists, train, measures=None):
     return _fixed(dists, train, 5)
 
 
 cache = dict()
 
 
-def analogy_dynamic(dists, train, measures):
+def analogy_dynamic(dists, train, measures=ABE.measures.default):
     # to avoid repeat computation, check for cache first
     tid = hashlib.sha256(train.values.tobytes()).hexdigest()
     if tid in cache:
@@ -76,13 +79,14 @@ def analogy_dynamic(dists, train, measures):
 
 
 def _fixed(dists, train, k):
-    info = [(d, v) for d, v in zip(dists.tolist(), train.iloc[:, -1].tolist())]
+    info = [(d, r) for d, (i, r) in zip(dists.tolist(), train.iterrows())]
     info.sort(key=lambda i: i[0])
     cares = [i[1] for i in info[:k]]
-    return sum(cares) / k
+    return pd.DataFrame(cares)
 
 
 def _tuneK(train, measures):
+    logging.DEBUG("Tuning K")
     # limit the data size of train as 50. otherwise randomly prune some
     if train.shape[0] > 50:
         train = train.sample(n=50)

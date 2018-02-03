@@ -24,7 +24,7 @@
 
 from __future__ import division
 from sklearn.decomposition import PCA
-from utils.kfold import KFoldSplit_df, KFoldSplit
+from utils.kfold import KFoldSplit_df
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error
 from deap import base
@@ -55,7 +55,12 @@ returned weights are **NOT** necessary to be normalized
 
 
 def default(df):
-    return gain_rank(df)
+    """
+    By default, do nothing
+    :param df:
+    :return:
+    """
+    return df
 
 
 def _ent(data):
@@ -171,16 +176,16 @@ def cfs(df):
 
     # fill in cf
     for attr in cf.columns:
-        cf.set_value(target, attr, abs(df[attr].corr(df[target], method='pearson')))
+        cf.loc[target, attr] = abs(df[attr].corr(df[target], method='pearson'))
 
     # fill in ff
     for attr1 in ff.index:
         for attr2 in ff.columns:
             if attr1 == attr2: continue
-            if ff.get_value(attr1, attr2): continue
+            if ff.loc[attr1, attr2]: continue
             corr = abs(df[attr1].corr(df[attr2], method='pearson'))
-            ff.set_value(attr1, attr2, corr)
-            ff.set_value(attr2, attr1, corr)
+            ff.loc[attr1, attr2] = corr
+            ff.loc[attr2, attr1] = corr
 
     def merit_S(fs, cf, ff):
         """
@@ -340,23 +345,18 @@ def genetic_weighting(df):
     toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_bool, 14 * n)
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
-    def chunks(arr, n):
-        return [arr[i:i + n] for i in range(0, len(arr), n)]
-
     def trans_weights2(popn):
-        a, b, c = list(), list(), list()
+        popn = popn[0]
+        weights = list()
 
-        for i in range(len(popn)):
-            a.append(chunks(popn[i], 14))
-
-        for i in range(len(a)):
-            for j in range(len(a[0])):
-                b.append(''.join(map(str, a[i][j])))
-
-        for i in range(len(b)):
-            c.append(round(int(b[i], 2) / 16383, 4))
-
-        return c
+        tmp = 0
+        for i, v in enumerate(popn):
+            tmp += 2 ** (13 - i % 14) * v
+            if i % 14 == 0 and i != 0:
+                weights.append(tmp)
+                tmp = 0
+        weights = [i / float(2 ** 14 - 1) for i in weights]
+        return weights
 
     def fitness_function(df, w=1):
         X = df.iloc[:, :-1]

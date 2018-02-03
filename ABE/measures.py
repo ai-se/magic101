@@ -41,7 +41,7 @@ def default(row, train):
 
 
 def euclidean(row, train):
-    # removing the last y value first
+    # ignoring the last y value first
     row = row[:-1]
     train = train.iloc[:, :-1]
     return np.sum(np.square(row - train), axis=1) ** 0.5
@@ -70,7 +70,7 @@ def weighted_euclidean(row, train):
             weight = np.append(weight, alpha)
         cache[tid] = weight
 
-    # removing the last y value
+    # ignoring the last y value
     row = row[:-1]
     train = train.iloc[:, :-1]
 
@@ -78,7 +78,7 @@ def weighted_euclidean(row, train):
 
 
 def maximum_measure(row, train):
-    # removing the last y value first
+    # ignoring the last y value first
     row = row[:-1]
     train = train.iloc[:, :-1]
     return np.max(np.square(row - train), axis=1)
@@ -97,14 +97,14 @@ def local_likelihood(row, train, k=-1):
 
 
 def minkowski(row, train, p=2):
-    # removing the last y value first
+    # ignoring the last y value first
     row = row[:-1]
     train = train.iloc[:, :-1]
     return np.sum((row - train) ** p, axis=1) ** (1 / p)
 
 
 def feature_mean_dist(row, train):
-    # removing the last y value first
+    # ignoring the last y value first
     row = row[:-1]
     train = train.iloc[:, :-1]
     return pd.Series(data=np.average(row) - np.average(train, axis=1))
