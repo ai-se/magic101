@@ -63,6 +63,10 @@ def default(df):
     return df
 
 
+def remain_same(df):
+    return df
+
+
 def _ent(data):
     """
     # Input a pandas series. calculate the entropy of series

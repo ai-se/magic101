@@ -4,6 +4,7 @@ import sys
 import time
 import urllib
 import xml.etree.ElementTree
+import time
 import pdb
 
 import validators
@@ -154,11 +155,12 @@ class FeatureTree(object):
 
             child_sum = sum([find(c) for c in node.children])
 
-            for m_child in filter(lambda x: x.node_type in ['m', 'r'], node.children):
+            for m_child in filter(lambda x: x.node_type in ['m', 'r', 'g'], node.children):
                 if find(m_child) == 0:
                     return False
 
             if node.node_type is 'g':
+                # pdb.set_trace()
                 if not (node.g_d <= child_sum <= node.g_u):
                     return False
 
@@ -171,7 +173,6 @@ class FeatureTree(object):
 
         if fill[0] == 0:
             return False
-
         return check_node(self.root)
 
     def get_feature_num(self):
@@ -276,7 +277,8 @@ class FeatureTree(object):
 
     def get_full_feature_configure_by_partial_def(self, given, type_of_return=list):
         """
-        for all unassigned features, we use random assignment
+        for all unassigned features, we use random assignment.
+        DO NOT GRANTEE TO BE VALID AFTER GENERATION
         :param given: typically assignments of all leaves
         :param type_of_return: setting which type to return. can be list or dict
         :return:
@@ -314,3 +316,42 @@ class FeatureTree(object):
         else:
             sys.stderr.wirte("check type_of_return input")
             return configure
+
+    def top_down_random(self, random_seed=None):
+        """
+        Use top-down strategy to randomly generate a configuration
+        Return is NOT necessary to be valid,
+        but it is more likely to be valid than gen_full_feature_configure_by_partial_def(), since it takes
+            tree structure and group limits into consideration
+        :return:
+        """
+        configure = {k: -1 for k in self.features}
+
+        # set root first
+        configure[self.root] = 1
+
+        def fill_child(node):
+            if configure[node] == -1:
+                assert False, "check here"
+
+            if configure[node] == 0:
+                for c in node.children:
+                    configure[c] = 0
+                return
+
+            if node.node_type == 'g':  # grantee the group limits
+                samples = random.sample(node.children, random.randint(node.g_d, node.g_u))
+                for c in node.children:
+                    configure[c] = 1 if c in samples else 0
+                return
+
+            for c in node.children:
+                if c.node_type == 'r' or c.node_type == 'm' or c.node_type == 'g':
+                    configure[c] = 1
+                else:
+                    configure[c] = random.choice([0, 1])
+            return
+
+        self.pre_order(self.root, fill_child)
+
+        return configure

@@ -106,11 +106,11 @@ def abe_execute(S, train, test):
 
     for predict, actual in zip(Y_predict, Y_actual):
         err += abs(predict - actual) / y_range
-    RMSE = err / test.shape[0]  # relative median standard error
+    ERR = err / test.shape[0]
 
-    logging.debug("\n\n*************** RMSE = {0:.0f}%*********\n\n\n".format(RMSE * 100))
+    logging.debug("\n\n****** ERR = {0:.0f}%*********\n\n\n".format(ERR * 100))
 
-    return RMSE
+    return ERR
 
 
 def gen_setting_obj(S_str):
@@ -156,6 +156,9 @@ def gen_setting_obj(S_str):
 
 
 if __name__ == '__main__':
+    """
+    ABE algorithm Demonstration
+    """
     logging.basicConfig(stream=sys.stdout,
                         format='[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
                         level=logging.DEBUG)
@@ -166,4 +169,4 @@ if __name__ == '__main__':
     for meta, train, test in KFoldSplit("data/maxwell.arff", folds=10):
         trainData = pd.DataFrame(data=train)
         testData = pd.DataFrame(data=test)
-        RMSE = abe_execute(S=settings, train=trainData, test=testData)
+        error = abe_execute(S=settings, train=trainData, test=testData)

@@ -24,6 +24,7 @@
 from __future__ import division, print_function
 from FeatureModel.Feature_tree import FeatureTree
 import random
+import pdb
 
 """
 This module handles the transactions of feature model. All feature model  are formatted as SPLOT xml file,
@@ -52,7 +53,8 @@ if __name__ == '__main__':
     # Step 3. generate the configurations
     given = {f: random.choice([0, 1]) for f in ft.leaves}
     X = ft.get_full_feature_configure_by_partial_def(given, dict)
-
+    pdb.set_trace()
+    print(ft.leaves[0].name)
     # Step 4. checking whether our configuration is correct
     isvalid = ft.check_fulfill_valid(X)
     print("Valid configure? %s" % isvalid)

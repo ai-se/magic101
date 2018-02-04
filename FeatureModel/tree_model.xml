@@ -53,13 +53,11 @@
 	:m Analogy Selection(_r_40)
 		:g (_r_40_41) [1,1] 
 			: Dynamic(_r_40_41_42)
-			: Fixed(_r_40_41_43)
-				:g (_r_40_41_43_44) [1,1] 
-					: Set K as 1(_r_40_41_43_44_45)
-					: Set K as 2(_r_40_41_43_44_46)
-					: Set K as 3(_r_40_41_43_44_47)
-					: Set K as 4(_r_40_41_43_44_48)
-					: Set K as 5(_r_40_41_43_44_49)
+			: Set K as 1(_r_40_41_43_44_45)
+			: Set K as 2(_r_40_41_43_44_46)
+			: Set K as 3(_r_40_41_43_44_47)
+			: Set K as 4(_r_40_41_43_44_48)
+			: Set K as 5(_r_40_41_43_44_49)
 </feature_tree>
 <constraints>
 constraint_6:~_r_6 or _r_17
