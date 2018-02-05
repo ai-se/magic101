@@ -159,7 +159,7 @@ def principal_component(df):
 
     # recreate a new dataframe
     target = df.columns[-1]
-    res = pd.DataFrame(data=new)
+    res = pd.DataFrame(data=new, index=df.index)
     res[target] = df[target]
 
     return res
