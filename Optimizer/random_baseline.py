@@ -47,15 +47,12 @@ def random_config(ft, dataset):
     """
 
     while True:
-        print('*')
         X = ft.top_down_random(1024)
         if ft.check_fulfill_valid(X):
             break
+        logging.debug('=== Invalid configuration. Regenerating...')
 
     settings = ft_dict_to_ABE_setting(X)
-    logging.basicConfig(stream=sys.stdout,
-                        format='[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
-                        level=logging.DEBUG)
 
     avg_error = list()
     for meta, train, test in KFoldSplit(dataset, folds=10):
@@ -67,7 +64,13 @@ def random_config(ft, dataset):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(stream=sys.stdout,
+                        format='[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
+                        level=logging.INFO)
+
     url = "./FeatureModel/tree_model.xml"
     ft = FeatureTree()
     ft.load_ft_from_url(url)
-    print(random_config(ft, "data/maxwell.arff"))
+
+    for _ in range(15):
+        print(random_config(ft, "data/maxwell.arff"))

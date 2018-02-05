@@ -24,5 +24,6 @@
 
 from __future__ import division
 
-class Object(object):
+
+class ABE_configures(object):
     pass

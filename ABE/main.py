@@ -59,7 +59,7 @@ import ABE.normalize
 import ABE.adaptation
 
 from utils.kfold import KFoldSplit
-from utils.bunch import Object
+from utils.bunch import ABE_configures
 
 
 def abe_execute(S, train, test):
@@ -117,7 +117,7 @@ def abe_execute(S, train, test):
 
 
 def gen_setting_obj(S_str):
-    S = Object()
+    S = ABE_configures()
 
     # three case subset selectors
     S.subSelector = ABE.subSelector.default
@@ -138,11 +138,10 @@ def gen_setting_obj(S_str):
             S.analogies = getattr(ABE.analogies, analogies)
 
     # eight feature weighting methods
-    # S.weighting = ABE.weighting.default
-    # for weighting in dir(ABE.weighting):
-    #     if weighting in S_str:
-    #         S.weighting = getattr(ABE.weighting, weighting)
-    S.weighting = ABE.weighting.gain_rank
+    S.weighting = ABE.weighting.default
+    for weighting in dir(ABE.weighting):
+        if weighting in S_str:
+            S.weighting = getattr(ABE.weighting, weighting)
 
     # five discretization methods
     S.discretization = ABE.discretization.default
