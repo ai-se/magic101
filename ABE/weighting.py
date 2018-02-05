@@ -359,7 +359,7 @@ def genetic_weighting(df):
         tmp = 0
         for i, v in enumerate(popn):
             tmp += 2 ** (13 - i % 14) * v
-            if i % 14 == 0 and i != 0:
+            if i % 14 == 13:
                 weights.append(tmp)
                 tmp = 0
         weights = [i / float(2 ** 14 - 1) for i in weights]
@@ -368,7 +368,6 @@ def genetic_weighting(df):
     def fitness_function(df, w=1):
         X = df.iloc[:, :-1]
         Y = df.iloc[:, -1:]
-
         X_W = X * w
 
         clf = KNeighborsRegressor(n_neighbors=5)
