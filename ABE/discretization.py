@@ -100,7 +100,7 @@ def entropy(df):
         """
         integers = map(int, vect)
 
-    warnings.warn("Currently entropy based discretization is NOT available. Will apply equal width")
+    # warnings.warn("Currently entropy based discretization is NOT available. Will apply equal width")
     return equal_width(df)
 
 

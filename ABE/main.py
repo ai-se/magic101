@@ -109,7 +109,7 @@ def abe_execute(S, train, test):
 
     for predict, actual in zip(Y_predict, Y_actual):
         err += abs(predict - actual) / y_range
-    ERR = err / test.shape[0]
+    ERR = err / (test.shape[0] + 0.0001)
 
     logging.debug("\n\n****** ERR = {0:.0f}%*********\n\n\n".format(ERR * 100))
 
@@ -126,7 +126,7 @@ def gen_setting_obj(S_str):
             S.subSelector = getattr(ABE.subSelector, subSelector)
 
     # six similarity measures
-    S.measures = ABE.measures.default
+    S.measures = ABE.measures.weighted_euclidean
     for measures in dir(ABE.measures):
         if measures in S_str:
             S.measures = getattr(ABE.measures, measures)
@@ -138,7 +138,7 @@ def gen_setting_obj(S_str):
             S.analogies = getattr(ABE.analogies, analogies)
 
     # eight feature weighting methods
-    S.weighting = ABE.weighting.default
+    S.weighting = ABE.weighting.principal_component
     for weighting in dir(ABE.weighting):
         if weighting in S_str:
             S.weighting = getattr(ABE.weighting, weighting)
@@ -150,7 +150,7 @@ def gen_setting_obj(S_str):
             S.discretization = getattr(ABE.discretization, discretization)
 
     # four adaptation methods
-    S.adaptation = ABE.adaptation.default
+    S.adaptation = ABE.adaptation.mean_adaptation
     for adaptation in dir(ABE.adaptation):
         if adaptation in S_str:
             S.adaptation = getattr(ABE.adaptation, adaptation)

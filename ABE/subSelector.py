@@ -59,5 +59,5 @@ def prototype(train):
     # here, we use Change et al. "Finding prototypes for nearest neighbor classifiers", 1974
 
     # TODO here
-    warnings.warn("Currently prototype subset selector is NOT available. Will apply outlier")
+    # warnings.warn("Currently prototype subset selector is NOT available. Will apply outlier")
     return outlier(train)
