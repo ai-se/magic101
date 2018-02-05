@@ -368,7 +368,7 @@ def genetic_weighting(df):
     def fitness_function(df, w=1):
         X = df.iloc[:, :-1]
         Y = df.iloc[:, -1:]
-
+        pdb.set_trace()
         X_W = X * w
 
         clf = KNeighborsRegressor(n_neighbors=5)
