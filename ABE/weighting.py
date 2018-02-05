@@ -90,12 +90,13 @@ def gain_rank(df):
     weights = pd.DataFrame(data=np.zeros([1, df.shape[1] - 1]), columns=df.columns[:-1])
 
     types_C = set(df.iloc[:, -1])
+    target = df.columns[-1]
     for a_i, a in enumerate(df.columns[:-1]):  # for each attribute a
         for typea in set(df.loc[:, a]):  # each class of attribute a
             selected_a = df[df[a] == typea]
             sub = 0
             for typec in types_C:
-                p_c_a = selected_a[df.iloc[:, -1] == typec].shape[0] / selected_a.shape[0]
+                p_c_a = selected_a[selected_a[target] == typec].shape[0] / selected_a.shape[0]
                 if p_c_a == 0:
                     continue
                 sub += p_c_a * math.log(p_c_a, 2)
@@ -103,9 +104,11 @@ def gain_rank(df):
 
     weights = H_C - weights
     weights[df.columns[-1]] = 1
-    weights = weights.append([weights] * (df.shape[0] - 1), ignore_index=True)
+    weights = weights.append([weights] * (df.shape[0] - 1), ignore_index=False)
+    weights.index = df.index
 
-    return weights * df
+    res = weights * df
+    return res
 
 
 def relief(df, measures=ABE.measures.default):
@@ -168,7 +171,7 @@ def cfs(df):
     - reference: sect 2.4 of hall et al. "Benchmarking Attribute Selection Techniques for Discrete Class Data Mining"
     reference2: Hall et al. "Correlation-based Feature Selection for Discrete and Numeric Class Machine Learning"
     - Good feature subsets contain features highly corrleated with the calss, yet uncorrelated with each other.
-    - random search is applied for figure out best feature subsets
+    - random_config search is applied for figure out best feature subsets
     :param df:
     :return:
     """
@@ -211,7 +214,7 @@ def cfs(df):
     lst_improve_at = time.time()
     best = [0, None]
     while time.time() - lst_improve_at < 1 or time.time() - hc_starts_at < 5:
-        # during of random search -> at most 5 seconds. if no improve by 1 second, then stop
+        # during of random_config search -> at most 5 seconds. if no improve by 1 second, then stop
         selects = [random.choice([0, 1]) for _ in range(len(features))]
         if not sum(selects): continue
         fs = [features[i] for i, v in enumerate(selects) if v]
@@ -265,7 +268,7 @@ def consistency_subset(df):
     lst_improve_at = time.time()
     best = [0, None]
     while time.time() - lst_improve_at < 1 or time.time() - hc_starts_at < 5:
-        # during of random search -> at most 5 seconds. if no improve by 1 second, then stop
+        # during of random_config search -> at most 5 seconds. if no improve by 1 second, then stop
         selects = [random.choice([0, 1]) for _ in range(len(features))]
         if not sum(selects): continue
         fs = [features[i] for i, v in enumerate(selects) if v]
@@ -318,7 +321,7 @@ def wrapper_subset(df):
     lst_improve_at = time.time()
     best = [float('inf'), None]
     while time.time() - lst_improve_at < 1 or time.time() - hc_starts_at < 5:
-        # during of random search -> at most 5 seconds. if no improve by 1 second, then stop
+        # during of random_config search -> at most 5 seconds. if no improve by 1 second, then stop
         selects = [random.choice([0, 1]) for _ in range(len(features))]
         if not sum(selects): continue
         fs = [features[i] for i, v in enumerate(selects) if v]

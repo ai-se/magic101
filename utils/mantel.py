@@ -151,9 +151,9 @@ def test(X, Y, perms=10000, method='pearson', tail='two-tail'):
         # Store the veridical covariance in 0th position...
         covariances[0] = (X_residuals * Y_residuals).sum()
 
-        # ...and then run the random permutations.
+        # ...and then run the random_config permutations.
         for i in range(1, perms):
-            # Choose a random order in which to permute the rows and columns.
+            # Choose a random_config order in which to permute the rows and columns.
             np.random.shuffle(order)
 
             # Take a permutation of the matrix.

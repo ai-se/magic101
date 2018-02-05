@@ -277,7 +277,7 @@ class FeatureTree(object):
 
     def get_full_feature_configure_by_partial_def(self, given, type_of_return=list):
         """
-        for all unassigned features, we use random assignment.
+        for all unassigned features, we use random_config assignment.
         DO NOT GRANTEE TO BE VALID AFTER GENERATION
         :param given: typically assignments of all leaves
         :param type_of_return: setting which type to return. can be list or dict

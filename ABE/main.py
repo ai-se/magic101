@@ -70,6 +70,9 @@ def abe_execute(S, train, test):
     :param test:
     :return:
     """
+    # for convenience, use negative index for test
+    test = test.set_index(pd.RangeIndex(start=-1, stop=-test.shape[0] - 1, step=-1))
+
     logging.debug("Sub selection")
     train = S.subSelector(train)
 
@@ -135,10 +138,11 @@ def gen_setting_obj(S_str):
             S.analogies = getattr(ABE.analogies, analogies)
 
     # eight feature weighting methods
-    S.weighting = ABE.weighting.default
-    for weighting in dir(ABE.weighting):
-        if weighting in S_str:
-            S.weighting = getattr(ABE.weighting, weighting)
+    # S.weighting = ABE.weighting.default
+    # for weighting in dir(ABE.weighting):
+    #     if weighting in S_str:
+    #         S.weighting = getattr(ABE.weighting, weighting)
+    S.weighting = ABE.weighting.gain_rank
 
     # five discretization methods
     S.discretization = ABE.discretization.default

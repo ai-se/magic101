@@ -81,25 +81,24 @@ def ft_dict_to_ABE_setting(d):
             S_str.append(fm2S[item.name])
     return gen_setting_obj(S_str)
 
-
-if __name__ == '__main__':
-    url = "./FeatureModel/tree_model.xml"
-    ft = FeatureTree()
-    ft.load_ft_from_url(url)
-
-    while True:
-        print('*')
-        X = ft.top_down_random(1024)
-        if ft.check_fulfill_valid(X):
-            break
-
-    settings = ft_dict_to_ABE_setting(X)
-
-    logging.basicConfig(stream=sys.stdout,
-                        format='[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
-                        level=logging.DEBUG)
-
-    for meta, train, test in KFoldSplit("data/maxwell.arff", folds=10):
-        trainData = pd.DataFrame(data=train)
-        testData = pd.DataFrame(data=test)
-        error = abe_execute(S=settings, train=trainData, test=testData)
+# if __name__ == '__main__':
+#     url = "./FeatureModel/tree_model.xml"
+#     ft = FeatureTree()
+#     ft.load_ft_from_url(url)
+#
+#     while True:
+#         print('*')
+#         X = ft.top_down_random(1024)
+#         if ft.check_fulfill_valid(X):
+#             break
+#
+#     settings = ft_dict_to_ABE_setting(X)
+#
+#     logging.basicConfig(stream=sys.stdout,
+#                         format='[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
+#                         level=logging.DEBUG)
+#
+#     for meta, train, test in KFoldSplit("data/maxwell.arff", folds=10):
+#         trainData = pd.DataFrame(data=train)
+#         testData = pd.DataFrame(data=test)
+#         error = abe_execute(S=settings, train=trainData, test=testData)
