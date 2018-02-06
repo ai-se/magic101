@@ -51,7 +51,7 @@ def random_config(ft, dataset):
         if ft.check_fulfill_valid(X):
             break
         logging.debug('=== Invalid configuration. Regenerating...')
-
+    # print(X)
     settings = ft_dict_to_ABE_setting(X)
 
     avg_error = list()

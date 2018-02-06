@@ -59,7 +59,7 @@ fm2S = {
     "Max_Distance"                       : 'maximum_measure',
     "Triangular_Distribution"            : 'local_likelihood',
     "Minkowski"                          : 'minkowski',
-    "Mean_of_Ranking"                    : 'mean_adaptation',
+    "Mean_of_Ranking"                    : 'feature_mean_dist',
     "Median"                             : 'median_adaptation',
     "Weighted_Mean"                      : 'weighted_mean',
     "Unweighted_Mean"                    : 'mean_adaptation',
