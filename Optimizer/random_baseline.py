@@ -72,5 +72,5 @@ if __name__ == '__main__':
     ft = FeatureTree()
     ft.load_ft_from_url(url)
 
-    for _ in range(1):
+    for _ in range(15):
         print(random_config(ft, "data/maxwell.arff"))

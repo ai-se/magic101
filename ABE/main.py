@@ -138,7 +138,7 @@ def gen_setting_obj(S_str):
             S.analogies = getattr(ABE.analogies, analogies)
 
     # eight feature weighting methods
-    S.weighting = ABE.weighting.principal_component
+    S.weighting = ABE.weighting.default
     for weighting in dir(ABE.weighting):
         if weighting in S_str:
             S.weighting = getattr(ABE.weighting, weighting)

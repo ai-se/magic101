@@ -137,11 +137,11 @@ def relief(df, measures=ABE.measures.default):
         t2 = np.sum(np.abs(miss - selected_row), axis=0) / (miss.shape[0] * m)
         weights = weights - t1 + t2
         df.drop(['d_'], axis=1, inplace=True)  # clear the distance
-
     weights = weights.drop(df.columns[-1], axis=1)
     weights = np.abs(weights)
     weights[df.columns[-1]] = 1
     weights = weights.append([weights] * (df.shape[0] - 1), ignore_index=True)
+    weights.index = df.index
 
     return weights * df
 
@@ -435,5 +435,4 @@ def genetic_weighting(df):
 
     final_weights = trans_weights2([best_ind])
     final_weights.append(1)
-
     return df * final_weights
