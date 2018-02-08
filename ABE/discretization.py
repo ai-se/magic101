@@ -91,7 +91,7 @@ def entropy(df):
     :param df:
     :return:
     """
-
+    # TODO
     def calc_ent(vect):
         """
         Calculate the differential entropy. reference https://www2.isye.gatech.edu/~yxie77/ece587/Lecture17.pdf
@@ -105,10 +105,10 @@ def entropy(df):
 
 
 def pkid(df):
+    # TODO
     """
     reference: Yang et al. "A comparative Study of Discretization Methods for Naive-Bayes Classifiers"
     :param df:
     :return:
     """
-    # TODO here
-    pdb.set_trace()
+    entropy(df)

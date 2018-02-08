@@ -47,11 +47,11 @@ def random_config(ft, dataset):
     """
 
     while True:
-        X = ft.top_down_random(1024)
+        X = ft.top_down_random(None)
         if ft.check_fulfill_valid(X):
             break
         logging.debug('=== Invalid configuration. Regenerating...')
-    # print(X)
+
     settings = ft_dict_to_ABE_setting(X)
 
     avg_error = list()
@@ -66,11 +66,11 @@ def random_config(ft, dataset):
 if __name__ == '__main__':
     logging.basicConfig(stream=sys.stdout,
                         format='[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
-                        level=logging.INFO)
+                        level=logging.DEBUG)
 
     url = "./FeatureModel/tree_model.xml"
     ft = FeatureTree()
     ft.load_ft_from_url(url)
 
     for _ in range(15):
-        print(random_config(ft, "data/maxwell.arff"))
+        print(random_config(ft, "data/albrecht.arff"))

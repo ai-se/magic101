@@ -70,29 +70,29 @@ def abe_execute(S, train, test):
     :param test:
     :return:
     """
+
     # for convenience, use negative index for test
     test = test.set_index(pd.RangeIndex(start=-1, stop=-test.shape[0] - 1, step=-1))
 
-    logging.debug("Sub selection")
+    logging.debug("Sub selection -- " + S.subSelector.__name__)
     train = S.subSelector(train)
-
     n_train, n_test = train.shape[0], test.shape[0]
     combined = pd.concat([train, test])
 
     logging.debug("Normalization")
     combined = ABE.normalize.normalize(combined)
 
-    logging.debug("Discretization")
+    logging.debug("Discretization -- " + S.discretization.__name__)
     combined = S.discretization(combined)
 
-    logging.debug("Feature weighting")
+    logging.debug("Feature weighting -- " + S.weighting.__name__)
     combined = S.weighting(combined)
 
     # separate train and test
     train = combined.iloc[:n_train, :]
     test = combined.iloc[n_train:, :]
 
-    logging.debug("Predicting")
+    logging.debug("Predicting " + S.analogies.__name__ + " " + S.adaptation.__name__)
     Y_predict, Y_actual = list(), list()
     for index, test_row in test.iterrows():
         dists = S.measures(test_row, train)

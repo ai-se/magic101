@@ -1,56 +1,43 @@
+import logging
 import random
-import pdb
-import numpy as np
-import pandas as pd
-import array
-import pdb
+import sys
 
 from deap import base
 from deap import creator
 from deap import tools
-from sklearn.neighbors import KNeighborsRegressor
 
 from Optimizer.feature_link import transform, convert
-from utils.kfold import KFoldSplit
 
-
-creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
-creator.create("Individual", array.array, typecode='d', fitness=creator.FitnessMin)
+logging.basicConfig(stream=sys.stdout,
+                    format='[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
+                    level=logging.DEBUG)
 
 
 def randlist(a=2, b=7, c=4, d=5, e=3, f=5):
-    return [random.randint(0,a),
-            random.randint(0,b),
-            random.randint(0,c),
-            random.randint(0,d),
-            random.randint(0,e),
-            random.randint(0,f)]
+    k = [random.randint(0, a),
+         random.randint(0, b),
+         random.randint(0, c),
+         random.randint(0, d),
+         random.randint(0, e),
+         random.randint(0, f)]
+    return k
 
+
+creator.create("FitnessMin", base.Fitness, weights=[-1.0], vioconindex=list())
+creator.create("Individual", list, fitness=creator.FitnessMin)
 
 toolbox = base.Toolbox()
-toolbox.register("individual", creator.Individual, randlist())
-toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 toolbox.register("select", tools.selRoulette)
 toolbox.register("evaluate", transform)
 toolbox.register("mate", tools.cxOnePoint)
 toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
 
-random.seed()
-
-ind1 = toolbox.individual()
-pop = toolbox.population(n=3)
-
-print("------------------------------------------------")
-
-# print(ind1)
-# print(pop)
+pop = [creator.Individual(randlist()) for _ in range(3)]
 
 CXPB, MUTPB = 0.5, 0.2
 
 temp_list = list(map(toolbox.evaluate, pop))
-print(temp_list)
-fitnesses = list(zip(temp_list,))
-print(fitnesses)
+fitnesses = list(zip(temp_list, ))
 
 for ind, fit in zip(pop, fitnesses):
     ind.fitness.values = fit
@@ -61,9 +48,8 @@ fits = [ind.fitness.values[0] for ind in pop]
 
 g = 0
 
-while g < 1:
-
-    g = g + 1
+while g < 3:
+    g += 1
     print("-- Generation %i --" % g)
 
     offspring = toolbox.select(pop, len(pop))
