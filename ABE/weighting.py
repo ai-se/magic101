@@ -152,7 +152,6 @@ def principal_component(df):
     :param df:
     :return:
     """
-
     n_components = int(df.shape[1] * 0.25)
     pca = PCA(n_components=n_components)
     new = pca.fit_transform(df.iloc[:, :-1])
@@ -303,6 +302,7 @@ def wrapper_subset(df):
         """
 
         errors = list()
+
         for train, test in KFoldSplit_df(df, 5):
             trainX, trainY = train.iloc[:, :-1], train.iloc[:, -1]
             testX, testY = test.iloc[:, :-1], test.iloc[:, -1]
@@ -341,7 +341,6 @@ def genetic_weighting(df):
     :param df:
     :return:
     """
-
     n = len(df.columns) - 1
 
     creator.create("FitnessMax", base.Fitness, weights=(1.0,))
@@ -377,9 +376,9 @@ def genetic_weighting(df):
         Y_predict = [i[0] for i in Y_predict]
         Y_actual = np.ravel(Y)
 
-        MRE = abs(Y_actual - Y_predict) / Y_actual
+        MRE = abs(Y_actual - Y_predict) / (Y_actual + 0.0001)
         MMRE = sum(MRE) / len(MRE)
-        f = 1 / MMRE
+        f = 1 / (MMRE + 0.0001)
         return f
 
     def eval_max(individual):
@@ -400,8 +399,6 @@ def genetic_weighting(df):
 
     for ind, fit in zip(pop, fitnesses):
         ind.fitness.values = fit
-
-    # fits = [ind.fitness.values[0] for ind in pop]
 
     for g in range(100):
         offspring = toolbox.select(pop, len(pop))
@@ -428,8 +425,6 @@ def genetic_weighting(df):
             ind.fitness.values = fit
 
         pop[:] = offspring
-
-        # fits = [ind.fitness.values[0] for ind in pop]
 
     best_ind = tools.selBest(pop, 1)[0]
 
