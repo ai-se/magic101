@@ -48,10 +48,10 @@ def random_config(ft, dataset):
 
     while True:
         X = ft.top_down_random(None)
+
         if ft.check_fulfill_valid(X):
             break
         logging.debug('=== Invalid configuration. Regenerating...')
-
     settings = ft_dict_to_ABE_setting(X)
 
     avg_error = list()
@@ -64,13 +64,13 @@ def random_config(ft, dataset):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(stream=sys.stdout,
-                        format='[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
-                        level=logging.DEBUG)
+    # logging.basicConfig(stream=sys.stdout,
+    #                     format='[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
+    #                     level=logging.DEBUG)
 
     url = "./FeatureModel/tree_model.xml"
     ft = FeatureTree()
     ft.load_ft_from_url(url)
 
-    for _ in range(15):
+    for _ in range(10):
         print(random_config(ft, "data/albrecht.arff"))
