@@ -111,4 +111,4 @@ def pkid(df):
     :param df:
     :return:
     """
-    entropy(df)
+    return equal_width(df)
