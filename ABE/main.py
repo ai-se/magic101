@@ -108,7 +108,7 @@ def abe_execute(S, train, test):
         y_range = 1
 
     for predict, actual in zip(Y_predict, Y_actual):
-        err += abs(predict - actual) / y_range
+        err += abs(predict - actual) / (y_range + 0.0001)
     ERR = err / (test.shape[0] + 0.0001)
 
     logging.debug("\n\n****** ERR = {0:.0f}%*********\n\n\n".format(ERR * 100))
