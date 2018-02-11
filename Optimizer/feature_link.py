@@ -34,16 +34,17 @@ def transform(x=None):
                         level=logging.INFO)
 
     ERR = list()
-    for meta, train, test in KFoldSplit("data/albrecht.arff", folds=3):
+    input_data = "data/albrecht.arff"
+    for meta, train, test in KFoldSplit(input_data, folds=3):
         trainData = pd.DataFrame(data=train)
         testData = pd.DataFrame(data=test)
         error = abe_execute(S=settings_1, train=trainData, test=testData)
         ERR.append(error)
-
     return np.mean(ERR),
 
 
 def convert(x):
+    x = x.tolist()
     fm3S = [
         ['rm_noting', 'outlier', 'prototype'],
         ['remain_same', 'genetic_weighting', 'gain_rank', 'relief', 'principal_component', 'cfs', 'consistency_subset',
