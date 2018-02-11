@@ -79,6 +79,7 @@ def ft_dict_to_ABE_setting(d):
         if not d[item]: continue
         if item.name in fm2S:
             S_str.append(fm2S[item.name])
+    # print(S_str)
     return gen_setting_obj(S_str)
 
 # if __name__ == '__main__':
