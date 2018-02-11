@@ -53,6 +53,7 @@ def random_config(ft, dataset):
             break
         logging.debug('=== Invalid configuration. Regenerating...')
     settings = ft_dict_to_ABE_setting(X)
+    # print(settings)
 
     avg_error = list()
     for meta, train, test in KFoldSplit(dataset, folds=10):
@@ -72,5 +73,20 @@ if __name__ == '__main__':
     ft = FeatureTree()
     ft.load_ft_from_url(url)
 
-    for _ in range(10):
-        print(random_config(ft, "data/albrecht.arff"))
+    MU = 10
+    gen_list = list()
+
+    # for _ in range(10):
+    #     print(random_config(ft, "data/albrecht.arff"))
+
+    for _ in range(MU):
+        gen_list.append(random_config(ft, "data/albrecht.arff"))
+
+    rd_mean = np.mean(gen_list)
+    rd_std = np.std(gen_list)
+    rd_min = np.min(gen_list)
+    rd_max = np.max(gen_list)
+    rd_median = np.median(gen_list)
+
+    print(gen_list)
+    print("evals:", MU, "mean:", rd_mean, "std:", rd_std, "min:", rd_min, "max:", rd_max, "median:", rd_median)
