@@ -101,15 +101,15 @@ def abe_execute(S, train, test):
         Y_actual.append(test_row[-1])
 
     logging.debug("Get median relative errors")
-    err = 0
+    mre = 0
     y_range = max(Y_actual) - min(Y_actual)
 
     if y_range < 1e-3:
         y_range = 1
 
     for predict, actual in zip(Y_predict, Y_actual):
-        err += abs(predict - actual) / (y_range + 0.0001)
-    ERR = err / (test.shape[0] + 0.0001)
+        mre += abs(predict - actual) / (actual + 0.0001)
+    ERR = mre / (test.shape[0])
 
     logging.debug("\n\n****** ERR = {0:.0f}%*********\n\n\n".format(ERR * 100))
 
