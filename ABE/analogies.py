@@ -75,8 +75,9 @@ def analogy_dynamic(dists, train, measures=ABE.measures.default):
         bestK = cache[tid]
     else:
         # tune the k
-        bestK = _tuneK(train, measures)
-        cache[tid] = bestK
+        # bestK = _tuneK(train, measures)
+        # cache[tid] = bestK
+        bestK = 6
     return _fixed(dists, train, bestK)
 
 
@@ -91,6 +92,7 @@ def _fixed(dists, train, k):
 
 
 def _tuneK(train, measures):
+
     logging.debug("Tuning K")
     # limit the data size of train as 50. otherwise randomly prune some
     if train.shape[0] > 50:
@@ -101,9 +103,11 @@ def _tuneK(train, measures):
                          index=train.index, columns=train.index)
 
     for i in train.index:
+
         ds = measures(train.loc[i], train)
         for j in train.index:
-            if i == j: continue
+            if i == j:
+                continue
             table[i][j] = ds[j]
             table[j][i] = ds[j]
 
