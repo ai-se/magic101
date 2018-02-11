@@ -40,19 +40,20 @@ def main():
     CR = 0.25
     F = 1
     MU = 10
-    NGEN = 3
+    NGEN = 10
 
     pop = [creator.Individual(randlist()) for _ in range(MU)]
 
     hof = tools.HallOfFame(1)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
     stats.register("avg", numpy.mean)
+    stats.register("median", numpy.median)
     stats.register("std", numpy.std)
     stats.register("min", numpy.min)
     stats.register("max", numpy.max)
 
     logbook = tools.Logbook()
-    logbook.header = "gen", "evals", "std", "min", "avg", "max"
+    logbook.header = "gen", "evals", "std", "min", "avg", "max", "median"
 
     fitnesses = toolbox.map(toolbox.evaluate, pop)
     for ind, fit in zip(pop, fitnesses):
@@ -79,7 +80,9 @@ def main():
         logbook.record(gen=g, evals=len(pop), **record)
         print(logbook.stream)
 
-    print("Best individual is ", hof[0], hof[0]. fitness.values[0])
+    # print("Best individual is ", hof[0], hof[0]. fitness.values[0])
+    print("Best configuration is ", convert(hof[0]))
+    print("The error is", hof[0].fitness.values[0])
 
 
 if __name__ == "__main__":
