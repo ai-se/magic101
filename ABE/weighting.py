@@ -343,12 +343,12 @@ def genetic_weighting(df):
     """
     n = len(df.columns) - 1
 
-    creator.create("FitnessMax", base.Fitness, weights=(1.0,))
-    creator.create("Individual", list, fitness=creator.FitnessMax)
+    creator.create("FitnessMax_", base.Fitness, weights=(1.0,))
+    creator.create("Individual_", list, fitness=creator.FitnessMax_)
 
     toolbox = base.Toolbox()
     toolbox.register("attr_bool", random.randint, 0, 1)
-    toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_bool, 14 * n)
+    toolbox.register("individual", tools.initRepeat, creator.Individual_, toolbox.attr_bool, 14 * n)
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
     def trans_weights2(popn):
