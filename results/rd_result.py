@@ -60,5 +60,5 @@ if __name__ == '__main__':
     print(len(gen_list))
     print(gen_list)
 
-    np.savetxt("rd_maxwell2.csv", gen_list, delimiter=",", fmt='%s')
+    np.savetxt("./results/csv_file/rd_maxwell2.csv", gen_list, delimiter=",", fmt='%s')
 
