@@ -34,7 +34,7 @@ def transform(x):
                         level=logging.INFO)
 
     ERR = list()
-    input_data = "data/albrecht.arff"
+    input_data = "data/maxwell.arff"
     for meta, train, test in KFoldSplit(input_data, folds=3):
         trainData = pd.DataFrame(data=train)
         testData = pd.DataFrame(data=test)
@@ -64,8 +64,6 @@ def convert(x):
 
 
 def cov(x=None):
-    if x is None:
-        x = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     x = x.tolist()
     fm2S = [
         ['rm_noting', 'outlier', 'prototype'],
@@ -85,7 +83,7 @@ def cov(x=None):
     settings_1 = gen_setting_obj(setting_str)
 
     err_list = list()
-    input_data = "data/albrecht.arff"
+    input_data = "data/maxwell.arff"
     data1, meta1 = arff.loadarff(input_data)
     for meta, train, test in KFoldSplit(input_data, folds=len(data1)):
         trainData = pd.DataFrame(data=train)
