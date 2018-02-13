@@ -16,13 +16,40 @@ def backtolist(file):
     list_3 = sorted(list_2)
     return list_3
 
-
-plt.plot(backtolist("rd_kemerer.csv"))
-plt.plot(backtolist("de1_kemerer.csv"))
+plt.figure(1)
+plt.subplot(311)
+plt.plot(backtolist("rd_albrecht.csv"))
+plt.plot(backtolist("de1_albrecht.csv"))
+plt.plot(backtolist("de2_albrecht.csv"))
 plt.yscale('symlog')           # linear, log, symlog, logit
 plt.ylabel('MRE')
-plt.xlim(120, 300)
-plt.ylim(0.01, 20)
-plt.legend(['rd', 'de1'], loc='upper left')
-# plt.xlabel('Dataset: maxwell')
+plt.xlim(200, 475)
+plt.ylim(-0.1, 20)
+plt.legend(['random', 'de(gen=1)', 'de(gen=2)'], loc='upper left')
+plt.xlabel('Dataset: albrecht')
+# plt.show()
+
+plt.subplot(312)
+plt.plot(backtolist("rd_kemerer.csv"))
+plt.plot(backtolist("de1_kemerer.csv"))
+plt.plot(backtolist("de2_kemerer.csv"))
+plt.yscale('symlog')           # linear, log, symlog, logit
+plt.ylabel('MRE')
+plt.xlim(100, 300)
+plt.ylim(-0.1, 20)
+plt.legend(['random', 'de(gen=1)', 'de(gen=2)'], loc='upper left')
+plt.xlabel('Dataset: kemerer')
+# plt.show()
+
+plt.subplot(313)
+plt.plot(backtolist("rd_maxwell.csv"))
+plt.plot(backtolist("de1_maxwell.csv"))
+plt.plot(backtolist("de2_maxwell.csv"))
+plt.yscale('symlog')           # linear, log, symlog, logit
+plt.ylabel('MRE')
+plt.xlim(400, 1200)
+plt.ylim(-0.1, 20)
+plt.legend(['random', 'de(gen=1)', 'de(gen=2)'], loc='upper left')
+plt.xlabel('Dataset: maxwell')
+plt.tight_layout()
 plt.show()

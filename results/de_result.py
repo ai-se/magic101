@@ -41,7 +41,7 @@ def de_estimate():
     CR = 0.25
     F = 1
     MU = 10
-    NGEN = 1
+    NGEN = 3
 
     pop = [creator.Individual(randlist()) for _ in range(MU)]
 
@@ -96,4 +96,4 @@ if __name__ == "__main__":
     print(len(gen_list))
     print(gen_list)
 
-    np.savetxt("de2_albrecht.csv", gen_list, delimiter=",", fmt='%s')
+    np.savetxt("de2_maxwell.csv", gen_list, delimiter=",", fmt='%s')
