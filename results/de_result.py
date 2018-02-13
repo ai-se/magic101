@@ -96,4 +96,4 @@ if __name__ == "__main__":
     print(len(gen_list))
     print(gen_list)
 
-    np.savetxt("de2_maxwell.csv", gen_list, delimiter=",", fmt='%s')
+    np.savetxt("de3_maxwell.csv", gen_list, delimiter=",", fmt='%s')
