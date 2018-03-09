@@ -55,15 +55,16 @@ def equal_frequency(df, groupSize=3):
     :param groupSize:
     :return:
     """
-    for c_i in range(df.shape[1]):
-        maps = pd.qcut(df.iloc[:, c_i].rank(method='first'), groupSize)
-        map_v = np.zeros([df.shape[0], 1])
-        for r_i, m in enumerate(maps):
-            x = m.left
-            y = m.right
-            map_v[r_i] = (y + x) / 2
-        df.iloc[:, c_i] = map_v
-    return df
+    # for c_i in range(df.shape[1]):
+    #     maps = pd.qcut(df.iloc[:, c_i], groupSize)
+    #     map_v = np.zeros([df.shape[0], 1])
+    #     for r_i, m in enumerate(maps):
+    #         x = m.left
+    #         y = m.right
+    #         map_v[r_i] = (y + x) / 2
+    #     df.iloc[:, c_i] = map_v
+    # return df
+    return do_nothing(df)
 
 
 def equal_width(df, groupSize=10):

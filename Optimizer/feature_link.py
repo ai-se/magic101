@@ -5,9 +5,10 @@ import pandas as pd
 import numpy as np
 from scipy.io import arff
 
-from ABE.main import abe_execute
+from ABE.main import abe_execute, sa_calculate
 from ABE.main import gen_setting_obj
-from utils.kfold import KFoldSplit
+from utils.kfold import KFoldSplit, KFoldSplit_df
+from data.new_data import data_albrecht, data_china, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki
 
 
 def transform(x):
@@ -29,13 +30,10 @@ def transform(x):
 
     settings_1 = gen_setting_obj(setting_str)
 
-    logging.basicConfig(stream=sys.stdout,
-                        format='[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
-                        level=logging.INFO)
-
     ERR = list()
-    input_data = "data/maxwell.arff"
-    for meta, train, test in KFoldSplit(input_data, folds=3):
+    input_data = data_miyazaki()         ##############################
+
+    for train, test in KFoldSplit_df(input_data, folds=3):
         trainData = pd.DataFrame(data=train)
         testData = pd.DataFrame(data=test)
         error = abe_execute(S=settings_1, train=trainData, test=testData)
@@ -82,12 +80,15 @@ def cov(x=None):
 
     settings_1 = gen_setting_obj(setting_str)
 
-    err_list = list()
-    input_data = "data/maxwell.arff"
-    data1, meta1 = arff.loadarff(input_data)
-    for meta, train, test in KFoldSplit(input_data, folds=len(data1)):
+    mre_list = list()
+    sa_list = list()
+    input_data = data_miyazaki()            ##############################
+
+    for train, test in KFoldSplit_df(input_data, folds=len(input_data)):
         trainData = pd.DataFrame(data=train)
         testData = pd.DataFrame(data=test)
         error = abe_execute(S=settings_1, train=trainData, test=testData)
-        err_list.append(error)
-    return err_list
+        mre_list.append(error)
+        sa = sa_calculate(S=settings_1, train=trainData, test=testData, inputs=input_data)
+        sa_list.append(sa)
+    return mre_list, sa_list

@@ -116,6 +116,42 @@ def abe_execute(S, train, test):
     return ERR
 
 
+def sa_calculate(S, train, test, inputs):
+
+    test = test.set_index(pd.RangeIndex(start=-1, stop=-test.shape[0] - 1, step=-1))
+    train = S.subSelector(train)
+    n_train, n_test = train.shape[0], test.shape[0]
+    combined = pd.concat([train, test])
+    combined = ABE.normalize.normalize(combined)
+    combined = S.discretization(combined)
+    combined = S.weighting(combined)
+
+    # separate train and test
+    train = combined.iloc[:n_train, :]
+    test = combined.iloc[n_train:, :]
+
+    Y_predict, Y_actual = list(), list()
+    for index, test_row in test.iterrows():
+        dists = S.measures(test_row, train)
+        closest, c_dists = S.analogies(dists, train, measures=S.measures)
+        Y_predict.append(S.adaptation(closest, test_row, c_dists))
+        Y_actual.append(test_row[-1])
+    ar = 0
+    y_range = max(Y_actual) - min(Y_actual)
+
+    if y_range < 1e-3:
+        y_range = 1
+
+    for predict, actual in zip(Y_predict, Y_actual):
+        ar += abs(predict - actual)
+    mar = ar / (test.shape[0])
+    inputs = ABE.normalize.normalize(inputs)
+    marr = inputs.iloc[:,-1].mean()
+    sa_error = (1 - mar/marr)
+
+    return sa_error
+
+
 def gen_setting_obj(S_str):
     S = ABE_configures()
 
@@ -158,18 +194,18 @@ def gen_setting_obj(S_str):
     return S
 
 
-if __name__ == '__main__':
-    """
-    ABE algorithm Demonstration
-    """
-    logging.basicConfig(stream=sys.stdout,
-                        format='[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
-                        level=logging.DEBUG)
-
-    settings = gen_setting_obj(
-        ['outlier', 'maximum_measure', 'analogy_dynamic', 'weighted_mean'])
-
-    for meta, train, test in KFoldSplit("data/maxwell.arff", folds=10):
-        trainData = pd.DataFrame(data=train)
-        testData = pd.DataFrame(data=test)
-        error = abe_execute(S=settings, train=trainData, test=testData)
+# if __name__ == '__main__':
+#     """
+#     ABE algorithm Demonstration
+#     """
+#     logging.basicConfig(stream=sys.stdout,
+#                         format='[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
+#                         level=logging.DEBUG)
+#
+#     settings = gen_setting_obj(
+#         ['outlier', 'maximum_measure', 'analogy_dynamic', 'weighted_mean'])
+#
+#     for meta, train, test in KFoldSplit("data/maxwell.arff", folds=10):
+#         trainData = pd.DataFrame(data=train)
+#         testData = pd.DataFrame(data=test)
+#         error = abe_execute(S=settings, train=trainData, test=testData)

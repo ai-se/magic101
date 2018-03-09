@@ -2,18 +2,19 @@
 import random
 import array
 
-import numpy
+import numpy as np
 
 from deap import base
 from deap import creator
 from deap import tools
 import sys
+import pdb
 import warnings
 
 if not sys.warnoptions:
     warnings.simplefilter("ignore")
 
-from Optimizer.feature_link import convert, transform
+from Optimizer.feature_link import convert, transform, cov
 
 NDIM = 6
 
@@ -35,22 +36,22 @@ toolbox.register("select", tools.selRandom, k=3)
 toolbox.register("evaluate", transform)
 
 
-def main():
+def de_estimate():
     # Differential evolution parameters
     CR = 0.25
     F = 1
     MU = 10
-    NGEN = 10
+    NGEN = 8
 
     pop = [creator.Individual(randlist()) for _ in range(MU)]
 
     hof = tools.HallOfFame(1)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
-    stats.register("avg", numpy.mean)
-    stats.register("median", numpy.median)
-    stats.register("std", numpy.std)
-    stats.register("min", numpy.min)
-    stats.register("max", numpy.max)
+    stats.register("avg", np.mean)
+    stats.register("median", np.median)
+    stats.register("std", np.std)
+    stats.register("min", np.min)
+    stats.register("max", np.max)
 
     logbook = tools.Logbook()
     logbook.header = "gen", "evals", "std", "min", "avg", "max", "median"
@@ -58,12 +59,11 @@ def main():
     fitnesses = toolbox.map(toolbox.evaluate, pop)
     for ind, fit in zip(pop, fitnesses):
         ind.fitness.values = fit
-
     record = stats.compile(pop)
     logbook.record(gen=0, evals=len(pop), **record)
-    print(logbook.stream)
+    # print(logbook.stream)
 
-    for g in range(1, NGEN):
+    for g in range(1, NGEN+1):
         for k, agent in enumerate(pop):
             a, b, c = toolbox.select(pop)
             y = toolbox.clone(agent)
@@ -78,12 +78,31 @@ def main():
         hof.update(pop)
         record = stats.compile(pop)
         logbook.record(gen=g, evals=len(pop), **record)
-        print(logbook.stream)
+        # print(logbook.stream)
 
     # print("Best individual is ", hof[0], hof[0]. fitness.values[0])
-    print("Best configuration is ", convert(hof[0]))
-    print("The error is", hof[0].fitness.values[0])
+    # print("Best configuration is ", convert(hof[0]))
+    # print("The error is", hof[0].fitness.values[0])
+    # print(record)
+    mre_list = cov(hof[0])[0]
+    sa_list = cov(hof[0])[1]
+    config = hof[0]
+    return mre_list, sa_list, config
 
 
 if __name__ == "__main__":
-    main()
+    repeats = 10
+    temp = de_estimate()
+    m_list = list()
+    s_list = list()
+    for _ in range(repeats):
+        m_list += temp[0]
+        s_list += temp[1]
+    print(len(m_list))
+    print(m_list)
+    print(len(s_list))
+    print(s_list)
+
+    np.savetxt("./data_file/miyazaki/de8_miyazaki_mre.csv", m_list, delimiter=",", fmt='%s')
+    np.savetxt("./data_file/miyazaki/de8_miyazaki_sa.csv", s_list, delimiter=",", fmt='%s')
+    np.savetxt("./data_file/miyazaki/de8_miyazaki_config.csv", temp[2], delimiter=",", fmt='%s')
