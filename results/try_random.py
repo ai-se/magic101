@@ -1,22 +1,20 @@
-
-import random
 import array
-
-import numpy as np
-import pandas as pd
+import random
 import sys
-
-from scipy.io import arff
-
-from ABE.main import abe_execute, sa_calculate
-from ABE.main import gen_setting_obj
-from utils.kfold import KFoldSplit, KFoldSplit_df
-from data.new_data import data_albrecht, data_china, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki
-
 import warnings
+
+from deap import base
+from deap import creator
+from deap import tools
+
+from ABE.main import abe_execute
 
 if not sys.warnoptions:
     warnings.simplefilter("ignore")
+
+from Optimizer.feature_link import transform, get_setting_obj, mre_calc, sa_calc
+
+NDIM = 6
 
 
 def randlist(a=2, b=7, c=4, d=5, e=3, f=5):
@@ -29,79 +27,31 @@ def randlist(a=2, b=7, c=4, d=5, e=3, f=5):
     return k
 
 
-def transf(x):
-    fm4S = [
-        ['rm_noting', 'outlier', 'prototype'],
-        ['remain_same', 'genetic_weighting', 'gain_rank', 'relief', 'principal_component', 'cfs', 'consistency_subset',
-         'wrapper_subset'],
-        ['do_nothing', 'equal_frequency', 'equal_width', 'entropy', 'pkid'],
-        ['euclidean', 'weighted_euclidean', 'maximum_measure', 'local_likelihood', 'minkowski', 'feature_mean_dist'],
-        ['median_adaptation', 'mean_adaptation', 'second_learner_adaption', 'weighted_mean'],
-        ['analogy_fix1', 'analogy_fix2', 'analogy_fix3', 'analogy_fix4', 'analogy_fix5', 'analogy_dynamic']
-    ]
-    x = map(int, x)
-    setting_str = list()
+def random_strategy(randomTimes, trainData, testData):
+    """
+    :param randomTimes:
+    :param trainData:
+    :param testData:
+    :return: mre, sa, best configuration
+    """
 
-    for i, v in enumerate(x):
-        setting_str.append(fm4S[i][v])
+    def evaluateFunc(config):
+        return transform(config, trainData, testData)
 
-    settings_1 = gen_setting_obj(setting_str)
+    toolbox = base.Toolbox()
+    creator.create("FitnessMin", base.Fitness, weights=[-1.0], )
+    creator.create("Individual", array.array, typecode='d', fitness=creator.FitnessMin)
+    toolbox.register("evaluate", evaluateFunc)
 
-    ERR = list()
-    SA = list()
-    input_data = data_miyazaki()         #######################################
+    pop = [creator.Individual(randlist()) for _ in range(randomTimes)]
+    hof = tools.HallOfFame(1)
+    for ind in pop:
+        fitness = toolbox.evaluate(ind)
+        ind.fitness.values = fitness
 
-    for train, test in KFoldSplit_df(input_data, folds=len(input_data)):
-        trainData = pd.DataFrame(data=train)
-        testData = pd.DataFrame(data=test)
-        error = abe_execute(S=settings_1, train=trainData, test=testData)
-        ERR.append(error)
-        sa = sa_calculate(S=settings_1, train=trainData, test=testData, inputs=input_data)
-        SA.append(sa)
-    return ERR, SA
+    hof.update(pop)
+    best = hof[0]
 
+    y_predict, y_acutal = abe_execute(S=get_setting_obj(best), train=trainData, test=testData)
 
-# def find_best_rd():
-#     temp = 1000
-#     candi_conf = []
-#     for _ in range(1):
-#         err_list = transf(randlist())[0]
-#         if temp > np.median(err_list):
-#             temp = np.median(err_list)
-#             candi_conf = randlist()
-#     return candi_conf
-
-
-def myrandlist():
-    k = [2, 2, 1, 4, 3, 0]
-    return k
-
-
-def estimate(x):
-    return transf(x)
-
-
-if __name__ == "__main__":
-    repeats = 10
-    A = randlist()
-    temp = estimate(A)
-
-    mre_list = list()
-    for _ in range(repeats):
-        mre_list += temp[0]
-    print(len(mre_list))
-    print(mre_list)
-    print("sum_mre:",sum(mre_list))
-
-    sa_list = list()
-    for _ in range(repeats):
-        sa_list += temp[1]
-    print(len(sa_list))
-    print(sa_list)
-    print("sum_sa:", sum(sa_list))
-
-    print("config:", A)
-
-    np.savetxt("./data_file/miyazaki/random_miyazaki_mre.csv", mre_list, delimiter=",", fmt='%s')
-    np.savetxt("./data_file/miyazaki/random_miyazaki_sa.csv", sa_list, delimiter=",", fmt='%s')
-    np.savetxt("./data_file/miyazaki/random_miyazaki_config.csv", A, delimiter=",", fmt='%s')
+    return mre_calc(y_predict, y_acutal), sa_calc(y_predict, y_acutal), best
