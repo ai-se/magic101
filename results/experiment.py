@@ -25,6 +25,7 @@ import sys
 
 from data.new_data import data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki
 from results.try_de import de_estimate
+from results.try_random import random_strategy
 from utils.kfold import KFoldSplit_df
 
 
@@ -36,8 +37,8 @@ def DE8(TrainSet, TestSet):
     return de_estimate(8, TrainSet, TestSet)
 
 
-def RANDOM():
-    pass
+def RANDOM(TrainSet, TestSet):
+    return random_strategy(40, TrainSet, TestSet)
 
 
 def ABE0():
@@ -53,10 +54,12 @@ def hpc():
     - system auguments:
         1 modelIndex,
         2 repeatID
-        3 methodology ID [0-DE2, 1-DE8]
+        3 methodology ID [0-DE2, 1-DE8, 2-RANDOM]
     :return: writing to sysout
         ^^^^ repeatID mre sa
     """
+    print("RUNING with " + str(sys.argv))
+
     datafunc = [data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki]
     model = datafunc[int(sys.argv[1])]
     methodologyId = int(sys.argv[3])
@@ -66,6 +69,8 @@ def hpc():
             res = DE2(train, test)
         elif methodologyId == 1:
             res = DE8(train, test)
+        elif methodologyId == 2:
+            res = RANDOM(train, test)
 
     with open('FINAL.txt', 'a+') as f:
         f.write('^^^ ' + sys.argv[2] + ' ' + str(res[0]) + ' ' + str(res[1]) + '\n')

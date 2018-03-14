@@ -42,7 +42,7 @@ def de_estimate(NGEN, trainData, testData):
     # Differential evolution parameters
     CR = 0.25
     F = 1
-    MU = 10
+    MU = 20
 
     toolbox = base.Toolbox()
     creator.create("FitnessMin", base.Fitness, weights=[-1.0], )
