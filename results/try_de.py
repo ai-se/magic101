@@ -1,25 +1,20 @@
-
-import random
 import array
-
-import numpy as np
+import random
+import sys
+import warnings
 
 from deap import base
 from deap import creator
 from deap import tools
-import sys
-import pdb
-import warnings
+
+from ABE.main import abe_execute
 
 if not sys.warnoptions:
     warnings.simplefilter("ignore")
 
-from Optimizer.feature_link import convert, transform, cov
+from Optimizer.feature_link import transform, get_setting_obj, mre_calc, sa_calc
 
 NDIM = 6
-
-creator.create("FitnessMin", base.Fitness, weights=[-1.0], vioconindex=list())
-creator.create("Individual", array.array, typecode='d', fitness=creator.FitnessMin)
 
 
 def randlist(a=2, b=7, c=4, d=5, e=3, f=5):
@@ -31,39 +26,37 @@ def randlist(a=2, b=7, c=4, d=5, e=3, f=5):
          random.randint(0, f)]
     return k
 
-toolbox = base.Toolbox()
-toolbox.register("select", tools.selRandom, k=3)
-toolbox.register("evaluate", transform)
 
+def de_estimate(NGEN, trainData, testData):
+    """
 
-def de_estimate():
+    :param NGEN:
+    :param trainData:
+    :param testData:
+    :return: mre, sa, best configuration
+    """
+
+    def evaluateFunc(config):
+        return transform(config, trainData, testData)
+
     # Differential evolution parameters
     CR = 0.25
     F = 1
     MU = 10
-    NGEN = 8
+
+    toolbox = base.Toolbox()
+    creator.create("FitnessMin", base.Fitness, weights=[-1.0], )
+    creator.create("Individual", array.array, typecode='d', fitness=creator.FitnessMin)
+    toolbox.register("select", tools.selRandom, k=3)
+    toolbox.register("evaluate", evaluateFunc)
 
     pop = [creator.Individual(randlist()) for _ in range(MU)]
-
     hof = tools.HallOfFame(1)
-    stats = tools.Statistics(lambda ind: ind.fitness.values)
-    stats.register("avg", np.mean)
-    stats.register("median", np.median)
-    stats.register("std", np.std)
-    stats.register("min", np.min)
-    stats.register("max", np.max)
+    for ind in pop:
+        fitness = toolbox.evaluate(ind)
+        ind.fitness.values = fitness
 
-    logbook = tools.Logbook()
-    logbook.header = "gen", "evals", "std", "min", "avg", "max", "median"
-
-    fitnesses = toolbox.map(toolbox.evaluate, pop)
-    for ind, fit in zip(pop, fitnesses):
-        ind.fitness.values = fit
-    record = stats.compile(pop)
-    logbook.record(gen=0, evals=len(pop), **record)
-    # print(logbook.stream)
-
-    for g in range(1, NGEN+1):
+    for g in range(1, NGEN + 1):
         for k, agent in enumerate(pop):
             a, b, c = toolbox.select(pop)
             y = toolbox.clone(agent)
@@ -76,33 +69,11 @@ def de_estimate():
             if y.fitness > agent.fitness:
                 pop[k] = y
         hof.update(pop)
-        record = stats.compile(pop)
-        logbook.record(gen=g, evals=len(pop), **record)
-        # print(logbook.stream)
 
-    # print("Best individual is ", hof[0], hof[0]. fitness.values[0])
-    # print("Best configuration is ", convert(hof[0]))
-    # print("The error is", hof[0].fitness.values[0])
-    # print(record)
-    mre_list = cov(hof[0])[0]
-    sa_list = cov(hof[0])[1]
-    config = hof[0]
-    return mre_list, sa_list, config
+    best = hof[0]
+    y_predict = abe_execute(S=get_setting_obj(best), train=trainData, test=testData)
+    y_acutal = testData.iloc[:, -1].tolist()
 
+    # calculate MRE, SA
 
-if __name__ == "__main__":
-    repeats = 10
-    temp = de_estimate()
-    m_list = list()
-    s_list = list()
-    for _ in range(repeats):
-        m_list += temp[0]
-        s_list += temp[1]
-    print(len(m_list))
-    print(m_list)
-    print(len(s_list))
-    print(s_list)
-
-    np.savetxt("./data_file/miyazaki/de8_miyazaki_mre.csv", m_list, delimiter=",", fmt='%s')
-    np.savetxt("./data_file/miyazaki/de8_miyazaki_sa.csv", s_list, delimiter=",", fmt='%s')
-    np.savetxt("./data_file/miyazaki/de8_miyazaki_config.csv", temp[2], delimiter=",", fmt='%s')
+    return mre_calc(y_predict, y_acutal), sa_calc(y_predict, y_acutal), best

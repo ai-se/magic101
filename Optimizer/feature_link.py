@@ -1,18 +1,11 @@
-import logging
-import random
-import sys
 import pandas as pd
-import numpy as np
-from scipy.io import arff
 
-from ABE.main import abe_execute, sa_calculate
+from ABE.main import abe_execute
 from ABE.main import gen_setting_obj
-from utils.kfold import KFoldSplit, KFoldSplit_df
-from data.new_data import data_albrecht, data_china, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki
 
 
-def transform(x):
-    x = x.tolist()
+def get_setting_obj(configurationIndex):
+    configurationIndex = configurationIndex.tolist()
     fm2S = [
         ['rm_noting', 'outlier', 'prototype'],
         ['remain_same', 'genetic_weighting', 'gain_rank', 'relief', 'principal_component', 'cfs', 'consistency_subset',
@@ -22,73 +15,47 @@ def transform(x):
         ['median_adaptation', 'mean_adaptation', 'second_learner_adaption', 'weighted_mean'],
         ['analogy_fix1', 'analogy_fix2', 'analogy_fix3', 'analogy_fix4', 'analogy_fix5', 'analogy_dynamic']
     ]
-    x = map(int, x)
+    configurationIndex = map(int, configurationIndex)
     setting_str = list()
 
-    for i, v in enumerate(x):
+    for i, v in enumerate(configurationIndex):
         setting_str.append(fm2S[i][v])
 
     settings_1 = gen_setting_obj(setting_str)
-
-    ERR = list()
-    input_data = data_miyazaki()         ##############################
-
-    for train, test in KFoldSplit_df(input_data, folds=3):
-        trainData = pd.DataFrame(data=train)
-        testData = pd.DataFrame(data=test)
-        error = abe_execute(S=settings_1, train=trainData, test=testData)
-        ERR.append(error)
-    return np.mean(ERR),
+    return settings_1
 
 
-def convert(x):
-    x = x.tolist()
-    fm3S = [
-        ['rm_noting', 'outlier', 'prototype'],
-        ['remain_same', 'genetic_weighting', 'gain_rank', 'relief', 'principal_component', 'cfs', 'consistency_subset',
-         'wrapper_subset'],
-        ['do_nothing', 'equal_frequency', 'equal_width', 'entropy', 'pkid'],
-        ['euclidean', 'weighted_euclidean', 'maximum_measure', 'local_likelihood', 'minkowski', 'feature_mean_dist'],
-        ['median_adaptation', 'mean_adaptation', 'second_learner_adaption', 'weighted_mean'],
-        ['analogy_fix1', 'analogy_fix2', 'analogy_fix3', 'analogy_fix4', 'analogy_fix5', 'analogy_dynamic']
-    ]
-
-    x = map(int, x)
-    setting_str = list()
-    for i, v in enumerate(x):
-        setting_str.append(fm3S[i][v])
-
-    return setting_str
+def mre_calc(y_predict, y_actual):
+    mre = 0
+    for predict, actual in zip(y_predict, y_actual):
+        mre += abs(predict - actual) / (actual + 0.0001)
+    MRE = mre / (len(y_actual))
+    return MRE
 
 
-def cov(x=None):
-    x = x.tolist()
-    fm2S = [
-        ['rm_noting', 'outlier', 'prototype'],
-        ['remain_same', 'genetic_weighting', 'gain_rank', 'relief', 'principal_component', 'cfs', 'consistency_subset',
-         'wrapper_subset'],
-        ['do_nothing', 'equal_frequency', 'equal_width', 'entropy', 'pkid'],
-        ['euclidean', 'weighted_euclidean', 'maximum_measure', 'local_likelihood', 'minkowski', 'feature_mean_dist'],
-        ['median_adaptation', 'mean_adaptation', 'second_learner_adaption', 'weighted_mean'],
-        ['analogy_fix1', 'analogy_fix2', 'analogy_fix3', 'analogy_fix4', 'analogy_fix5', 'analogy_dynamic']
-    ]
-    x = map(int, x)
-    setting_str = list()
+def sa_calc(Y_predict, Y_actual):
+    ar = 0
+    for predict, actual in zip(Y_predict, Y_actual):
+        ar += abs(predict - actual)
+    mar = ar / (len(Y_predict))
+    marr = sum(Y_actual) / len(Y_actual)
+    sa_error = (1 - mar / marr)
 
-    for i, v in enumerate(x):
-        setting_str.append(fm2S[i][v])
+    return sa_error
 
-    settings_1 = gen_setting_obj(setting_str)
 
-    mre_list = list()
-    sa_list = list()
-    input_data = data_miyazaki()            ##############################
-
-    for train, test in KFoldSplit_df(input_data, folds=len(input_data)):
-        trainData = pd.DataFrame(data=train)
-        testData = pd.DataFrame(data=test)
-        error = abe_execute(S=settings_1, train=trainData, test=testData)
-        mre_list.append(error)
-        sa = sa_calculate(S=settings_1, train=trainData, test=testData, inputs=input_data)
-        sa_list.append(sa)
-    return mre_list, sa_list
+def transform(configurationIndex, trainData, testData):
+    """
+    Given trainDat, TestData and configuration indices, return the MRE of given test data set.
+    :param configurationIndex:
+    :param trainData:
+    :param testData:
+    :return:
+    """
+    y_predict = abe_execute(S=get_setting_obj(configurationIndex), train=trainData, test=testData)
+    combinedY = pd.concat([trainData.iloc[:, -1], testData.iloc[:, -1]]).tolist()
+    m, M = min(combinedY), max(combinedY)
+    testY = list()
+    for i in testData.iloc[:, -1].tolist():
+        testY.append((i - m) / (M - m))
+    return mre_calc(y_predict, testY),
