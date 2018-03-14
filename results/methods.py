@@ -74,3 +74,59 @@ def de_estimate(NGEN, trainData, testData):
     y_predict, y_acutal = abe_execute(S=get_setting_obj(best), train=trainData, test=testData)
 
     return mre_calc(y_predict, y_acutal), sa_calc(y_predict, y_acutal), best
+
+def random_strategy(randomTimes, trainData, testData):
+    """
+    :param randomTimes:
+    :param trainData:
+    :param testData:
+    :return: mre, sa, best configuration
+    """
+
+    def evaluateFunc(config):
+        return transform(config, trainData, testData)
+
+    toolbox = base.Toolbox()
+    creator.create("FitnessMin", base.Fitness, weights=[-1.0], )
+    creator.create("Individual", array.array, typecode='d', fitness=creator.FitnessMin)
+    toolbox.register("evaluate", evaluateFunc)
+
+    pop = [creator.Individual(randlist()) for _ in range(randomTimes)]
+    hof = tools.HallOfFame(1)
+    for ind in pop:
+        fitness = toolbox.evaluate(ind)
+        ind.fitness.values = fitness
+
+    hof.update(pop)
+    best = hof[0]
+
+    y_predict, y_acutal = abe_execute(S=get_setting_obj(best), train=trainData, test=testData)
+
+    return mre_calc(y_predict, y_acutal), sa_calc(y_predict, y_acutal), best
+
+def abe0_strategy(trainData, testData):
+    """
+    :param trainData:
+    :param testData:
+    :return: mre, sa, best configuration
+    """
+
+    def evaluateFunc(config):
+        return transform(config, trainData, testData)
+
+    toolbox = base.Toolbox()
+    creator.create("FitnessMin", base.Fitness, weights=[-1.0], )
+    creator.create("Individual", array.array, typecode='d', fitness=creator.FitnessMin)
+    toolbox.register("evaluate", evaluateFunc)
+
+    pop = [creator.Individual([0, 0, 0, 0, 0, 0])]
+    hof = tools.HallOfFame(1)
+    fitness = toolbox.evaluate(pop[0])
+    pop[0].fitness.values = fitness
+
+    hof.update(pop)
+    best = hof[0]
+
+    y_predict, y_acutal = abe_execute(S=get_setting_obj(best), train=trainData, test=testData)
+
+    return mre_calc(y_predict, y_acutal), sa_calc(y_predict, y_acutal), best

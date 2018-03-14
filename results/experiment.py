@@ -73,7 +73,9 @@ def hpc():
             res = RANDOM(train, test)
 
     with open('FINAL.txt', 'a+') as f:
-        f.write('^^^ ' + sys.argv[2] + ' ' + str(res[0]) + ' ' + str(res[1]) + '\n')
+        f.write(
+            '^^^ ' + sys.argv[1] + ' ' + sys.argv[2] + ' ' + sys.argv[3]
+            + ' ' + str(res[0]) + ' ' + str(res[1]) + '\n')
 
 
 if __name__ == '__main__':
