@@ -75,6 +75,7 @@ def de_estimate(NGEN, trainData, testData):
 
     return mre_calc(y_predict, y_acutal), sa_calc(y_predict, y_acutal), best
 
+
 def random_strategy(randomTimes, trainData, testData):
     """
     :param randomTimes:
@@ -103,6 +104,7 @@ def random_strategy(randomTimes, trainData, testData):
     y_predict, y_acutal = abe_execute(S=get_setting_obj(best), train=trainData, test=testData)
 
     return mre_calc(y_predict, y_acutal), sa_calc(y_predict, y_acutal), best
+
 
 def abe0_strategy(trainData, testData):
     """

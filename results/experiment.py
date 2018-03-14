@@ -24,8 +24,7 @@
 import sys
 
 from data.new_data import data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki
-from results.try_de import de_estimate
-from results.try_random import random_strategy
+from results.methods import de_estimate, random_strategy, abe0_strategy
 from utils.kfold import KFoldSplit_df
 
 
@@ -41,8 +40,8 @@ def RANDOM(TrainSet, TestSet):
     return random_strategy(40, TrainSet, TestSet)
 
 
-def ABE0():
-    pass
+def ABE0(TrainSet, TestSet):
+    return abe0_strategy(TrainSet, TestSet)
 
 
 def WHIGHAM():
@@ -54,7 +53,7 @@ def hpc():
     - system auguments:
         1 modelIndex,
         2 repeatID
-        3 methodology ID [0-DE2, 1-DE8, 2-RANDOM]
+        3 methodology ID [0-DE2, 1-DE8, 2-RANDOM, 3-ABE0]
     :return: writing to sysout
         ^^^^ repeatID mre sa
     """
@@ -71,6 +70,8 @@ def hpc():
             res = DE8(train, test)
         elif methodologyId == 2:
             res = RANDOM(train, test)
+        elif methodologyId == 3:
+            res = ABE0(train, test)
 
     with open('FINAL.txt', 'a+') as f:
         f.write(
