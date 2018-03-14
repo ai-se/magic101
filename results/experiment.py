@@ -68,7 +68,7 @@ def hpc():
             res = DE8(train, test)
 
     with open('FINAL.txt', 'a+') as f:
-        f.write('^^^ ' + sys.argv[2] + ' ' + str(res[0]) + ' ' + str(res[1]))
+        f.write('^^^ ' + sys.argv[2] + ' ' + str(res[0]) + ' ' + str(res[1]) + '\n')
 
 
 if __name__ == '__main__':
