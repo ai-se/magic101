@@ -1,5 +1,3 @@
-import pandas as pd
-
 from ABE.main import abe_execute
 from ABE.main import gen_setting_obj
 
@@ -52,10 +50,5 @@ def transform(configurationIndex, trainData, testData):
     :param testData:
     :return:
     """
-    y_predict = abe_execute(S=get_setting_obj(configurationIndex), train=trainData, test=testData)
-    combinedY = pd.concat([trainData.iloc[:, -1], testData.iloc[:, -1]]).tolist()
-    m, M = min(combinedY), max(combinedY)
-    testY = list()
-    for i in testData.iloc[:, -1].tolist():
-        testY.append((i - m) / (M - m))
-    return mre_calc(y_predict, testY),
+    Y_predict, Y_actual = abe_execute(S=get_setting_obj(configurationIndex), train=trainData, test=testData)
+    return mre_calc(Y_predict, Y_actual),

@@ -74,6 +74,4 @@ def de_estimate(NGEN, trainData, testData):
     y_predict = abe_execute(S=get_setting_obj(best), train=trainData, test=testData)
     y_acutal = testData.iloc[:, -1].tolist()
 
-    # calculate MRE, SA
-
     return mre_calc(y_predict, y_acutal), sa_calc(y_predict, y_acutal), best

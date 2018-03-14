@@ -47,6 +47,7 @@
 from __future__ import division
 
 import logging
+import pdb
 
 import pandas as pd
 
@@ -97,8 +98,7 @@ def abe_execute(S, train, test):
         closest, c_dists = S.analogies(dists, train, measures=S.measures)
         Y_predict.append(S.adaptation(closest, test_row, c_dists))
         Y_actual.append(test_row[-1])
-
-    return Y_predict
+    return Y_predict, Y_actual
 
 
 def gen_setting_obj(S_str):
