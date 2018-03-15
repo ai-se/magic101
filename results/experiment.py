@@ -52,8 +52,7 @@ def hpc():
     """
     - system auguments:
         1 modelIndex,
-        2 repeatID
-        3 methodology ID [0-DE2, 1-DE8, 2-RANDOM, 3-ABE0]
+        2 methodology ID [0-DE2, 1-DE8, 2-RANDOM, 3-ABE0]
     :return: writing to sysout
         ^^^^ repeatID mre sa
     """
@@ -61,22 +60,22 @@ def hpc():
 
     datafunc = [data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki]
     model = datafunc[int(sys.argv[1])]
-    methodologyId = int(sys.argv[3])
+    methodologyId = int(sys.argv[2])
     res = None
-    for train, test in KFoldSplit_df(model(), 3):
-        if methodologyId == 0:
-            res = DE2(train, test)
-        elif methodologyId == 1:
-            res = DE8(train, test)
-        elif methodologyId == 2:
-            res = RANDOM(train, test)
-        elif methodologyId == 3:
-            res = ABE0(train, test)
+    for _ in range(2):
+        for train, test in KFoldSplit_df(model(), 3):
+            if methodologyId == 0:
+                res = DE2(train, test)
+            elif methodologyId == 1:
+                res = DE8(train, test)
+            elif methodologyId == 2:
+                res = RANDOM(train, test)
+            elif methodologyId == 3:
+                res = ABE0(train, test)
 
-    with open('FINAL.txt', 'a+') as f:
-        f.write(
-            '^^^ ' + sys.argv[1] + ' ' + sys.argv[2] + ' ' + sys.argv[3]
-            + ' ' + str(res[0]) + ' ' + str(res[1]) + '\n')
+            with open('FINAL.txt', 'a+') as f:
+                f.write(
+                    '^^^ ' + sys.argv[1] + ' ' + sys.argv[2] + ' ' + str(res[0]) + ' ' + str(res[1]) + '\n')
 
 
 if __name__ == '__main__':
