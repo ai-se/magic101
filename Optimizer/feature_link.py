@@ -1,3 +1,4 @@
+import numpy as np
 from ABE.main import abe_execute
 from ABE.main import gen_setting_obj
 
@@ -23,11 +24,19 @@ def get_setting_obj(configurationIndex):
     return settings_1
 
 
+# def mre_calc(y_predict, y_actual):
+#     mre = 0
+#     for predict, actual in zip(y_predict, y_actual):
+#         mre += abs(predict - actual) / (actual + 0.0001)
+#     MRE = mre / (len(y_actual))
+#     return MRE
+
+
 def mre_calc(y_predict, y_actual):
-    mre = 0
+    mre = []
     for predict, actual in zip(y_predict, y_actual):
-        mre += abs(predict - actual) / (actual + 0.0001)
-    MRE = mre / (len(y_actual))
+        mre.append(abs(predict - actual) / (actual + 0.0001))
+    MRE = np.median(mre)
     return MRE
 
 
@@ -38,7 +47,6 @@ def sa_calc(Y_predict, Y_actual):
     mar = ar / (len(Y_predict))
     marr = sum(Y_actual) / len(Y_actual)
     sa_error = (1 - mar / marr)
-
     return sa_error
 
 
