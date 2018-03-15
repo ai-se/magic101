@@ -87,7 +87,9 @@ def hpc():
                 res = DE8(train, test)
 
             with open('final_list.txt', 'a+') as f:
-                f.write(sys.argv[1] + ' ' + sys.argv[2] + ' ' + str(res[0]) + ' ' + str(res[1]) + ' ' + str(res[2]) + '\n')
+                f.write(
+                    sys.argv[1] + ' ' + sys.argv[2] + ' ' + str(res[0]) + ' ' + str(res[1]) + ' ' + str(
+                        res[2]) + '\n')
 
 
 def local_run():
@@ -98,7 +100,7 @@ def local_run():
     :return: writing to sysout
         ^^^^ repeatID mre sa
     """
-    data_id = 1    ################# dataset used  [0-5]
+    data_id = 0    ################# dataset used  [0-5]
     method_id = 0  ################# method used  [0-ABE0, 1-RANDOM40, 2-RANDOM160, 3-DE2, 4-DE8]
     # print("data_id: " + str(data_id) + " " + "method_id: " + str(method_id))
 
@@ -124,13 +126,13 @@ def local_run():
         elif method_id == 4:
             res = DE8(train, test)
 
-        with open('new_test1.txt', 'a+') as f:
+        with open('new_test2.txt', 'a+') as f:
             f.write(
-                '### ' + str(data_id) + ' ' + str(method_id) + ' ' + str(res[0]) + ' ' + str(res[1]) + '\n')
+                '### ' + str(data_id) + ' ' + str(method_id) + ' ' + str(res[0]) + ' ' + str(res[1]) + ' ' + str(res[2]) + '\n')
 
 
 if __name__ == '__main__':
-    # repeats = 20     ################# repeat times
-    # for _ in range(repeats):
-    #     local_run()
-    hpc()
+    repeats = 1     ################# repeat times
+    for _ in range(repeats):
+        local_run()
+    # hpc()
