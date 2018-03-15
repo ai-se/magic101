@@ -22,7 +22,6 @@
 #  THE SOFTWARE.
 
 import sys
-import warnings
 
 from data.new_data import data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki
 from results.methods import de_estimate, random_strategy, abe0_strategy
