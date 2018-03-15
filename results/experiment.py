@@ -73,7 +73,7 @@ def hpc():
     else:
         fold_num = 10
 
-    for _ in range(2):
+    for _ in range(4):
         for train, test in KFoldSplit_df(model(), fold_num):
             if methodologyId == 0:
                 res = ABE0(train, test)
