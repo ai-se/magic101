@@ -126,13 +126,13 @@ def local_run():
         elif method_id == 4:
             res = DE8(train, test)
 
-        with open('new_test2.txt', 'a+') as f:
+        with open('new_test3.txt', 'a+') as f:
             f.write(
                 '### ' + str(data_id) + ' ' + str(method_id) + ' ' + str(res[0]) + ' ' + str(res[1]) + ' ' + str(res[2]) + '\n')
 
 
 if __name__ == '__main__':
-    repeats = 1     ################# repeat times
-    for _ in range(repeats):
-        local_run()
-    # hpc()
+    # repeats = 1     ################# repeat times
+    # for _ in range(repeats):
+    #     local_run()
+    hpc()
