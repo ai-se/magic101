@@ -36,8 +36,12 @@ def DE8(TrainSet, TestSet):
     return de_estimate(8, TrainSet, TestSet)
 
 
-def RANDOM(TrainSet, TestSet):
+def RANDOM40(TrainSet, TestSet):
     return random_strategy(40, TrainSet, TestSet)
+
+
+def RANDOM160(TrainSet, TestSet):
+    return random_strategy(160, TrainSet, TestSet)
 
 
 def ABE0(TrainSet, TestSet):
@@ -52,7 +56,7 @@ def hpc():
     """
     - system auguments:
         1 modelIndex,
-        2 methodology ID [0-DE2, 1-DE8, 2-RANDOM, 3-ABE0]
+        2 methodology ID [0-ABE0, 1-RANDOM40, 2-RANDOM160, 3-DE2, 4-DE8]
     :return: writing to sysout
         ^^^^ repeatID mre sa
     """
@@ -62,18 +66,27 @@ def hpc():
     model = datafunc[int(sys.argv[1])]
     methodologyId = int(sys.argv[2])
     res = None
-    for _ in range(2):
-        for train, test in KFoldSplit_df(model(), 3):
-            if methodologyId == 0:
-                res = DE2(train, test)
-            elif methodologyId == 1:
-                res = DE8(train, test)
-            elif methodologyId == 2:
-                res = RANDOM(train, test)
-            elif methodologyId == 3:
-                res = ABE0(train, test)
 
-            with open('test.txt', 'a+') as f:
+    num_pj = len(model())
+    if num_pj < 40:
+        fold_num = 3
+    else:
+        fold_num = 10
+
+    for _ in range(2):
+        for train, test in KFoldSplit_df(model(), fold_num):
+            if methodologyId == 0:
+                res = ABE0(train, test)
+            elif methodologyId == 1:
+                res = RANDOM40(train, test)
+            elif methodologyId == 2:
+                res = RANDOM160(train, test)
+            elif methodologyId == 3:
+                res = DE2(train, test)
+            elif methodologyId == 4:
+                res = DE8(train, test)
+
+            with open('final_list.txt', 'a+') as f:
                 f.write(
                     '^^^ ' + sys.argv[1] + ' ' + sys.argv[2] + ' ' + str(res[0]) + ' ' + str(res[1]) + '\n')
 
@@ -82,12 +95,12 @@ def local_run():
     """
     - system auguments:
         1 modelIndex  [0-5]
-        2 methodology ID [0-DE2, 1-DE8, 2-RANDOM, 3-ABE0]
+        2 methodology ID [0-ABE0, 1-RANDOM40, 2-RANDOM160, 3-DE2, 4-DE8]
     :return: writing to sysout
         ^^^^ repeatID mre sa
     """
     data_id = 1    ################# dataset used  [0-5]
-    method_id = 3  ################# method used  [0-DE2, 1-DE8, 2-RANDOM, 3-ABE0]
+    method_id = 0  ################# method used  [0-ABE0, 1-RANDOM40, 2-RANDOM160, 3-DE2, 4-DE8]
     # print("data_id: " + str(data_id) + " " + "method_id: " + str(method_id))
 
     datafunc = [data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki]
@@ -102,13 +115,15 @@ def local_run():
 
     for train, test in KFoldSplit_df(model(), fold_num):
         if method_id == 0:
-            res = DE2(train, test)
-        elif method_id == 1:
-            res = DE8(train, test)
-        elif method_id == 2:
-            res = RANDOM(train, test)
-        elif method_id == 3:
             res = ABE0(train, test)
+        elif method_id == 1:
+            res = RANDOM40(train, test)
+        elif method_id == 2:
+            res = RANDOM160(train, test)
+        elif method_id == 3:
+            res = DE2(train, test)
+        elif method_id == 4:
+            res = DE8(train, test)
 
         with open('new_test1.txt', 'a+') as f:
             f.write(
@@ -116,6 +131,7 @@ def local_run():
 
 
 if __name__ == '__main__':
-    repeats = 20     ################# repeat times
-    for _ in range(repeats):
-        local_run()
+    # repeats = 20     ################# repeat times
+    # for _ in range(repeats):
+    #     local_run()
+    hpc()
