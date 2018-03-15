@@ -87,8 +87,7 @@ def hpc():
                 res = DE8(train, test)
 
             with open('final_list.txt', 'a+') as f:
-                f.write(
-                    '^^^ ' + sys.argv[1] + ' ' + sys.argv[2] + ' ' + str(res[0]) + ' ' + str(res[1]) + '\n')
+                f.write(sys.argv[1] + ' ' + sys.argv[2] + ' ' + str(res[0]) + ' ' + str(res[1]) + ' ' + str(res[2]) + '\n')
 
 
 def local_run():
