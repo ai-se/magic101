@@ -20,8 +20,10 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
-
+import random
 import sys
+import time
+from multiprocessing import Process
 
 from data.new_data import data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki
 from results.methods import de_estimate, random_strategy, abe0_strategy
@@ -52,88 +54,66 @@ def WHIGHAM():
     pass
 
 
-def hpc():
+def exec(modelIndex, methodologyId):
     """
-    - system auguments:
-        1 modelIndex,
-        2 methodology ID [0-ABE0, 1-RANDOM40, 2-RANDOM160, 3-DE2, 4-DE8]
-    :return: writing to sysout
+    :param modelIndex:
+    :param methodologyId:
+    :return: writing to final_list.txt
         ^^^^ repeatID mre sa
     """
-    print("RUNING with " + str(sys.argv))
-
     datafunc = [data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki]
-    model = datafunc[int(sys.argv[1])]
-    methodologyId = int(sys.argv[2])
+    model = datafunc[modelIndex]
     res = None
 
     num_pj = len(model())
-    if num_pj < 40:
-        fold_num = 3
-    else:
-        fold_num = 10
-
-    for _ in range(4):
-        for train, test in KFoldSplit_df(model(), fold_num):
-            if methodologyId == 0:
-                res = ABE0(train, test)
-            elif methodologyId == 1:
-                res = RANDOM40(train, test)
-            elif methodologyId == 2:
-                res = RANDOM160(train, test)
-            elif methodologyId == 3:
-                res = DE2(train, test)
-            elif methodologyId == 4:
-                res = DE8(train, test)
-
-            with open('final_list.txt', 'a+') as f:
-                f.write(
-                    sys.argv[1] + ';' + sys.argv[2] + ';' + str(res[0]) + ';' + str(res[1]) + ';' +
-                    str(list(map(int, res[2].tolist()))) + '\n')
-
-
-def local_run():
-    """
-    - system auguments:
-        1 modelIndex  [0-5]
-        2 methodology ID [0-ABE0, 1-RANDOM40, 2-RANDOM160, 3-DE2, 4-DE8]
-    :return: writing to sysout
-        ^^^^ repeatID mre sa
-    """
-    data_id = 1    ################# dataset used  [0-5]
-    method_id = 0  ################# method used  [0-ABE0, 1-RANDOM40, 2-RANDOM160, 3-DE2, 4-DE8]
-    # print("data_id: " + str(data_id) + " " + "method_id: " + str(method_id))
-
-    datafunc = [data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki]
-    model = datafunc[data_id]
-    num_pj = len(model())
-    res = None
-
     if num_pj < 40:
         fold_num = 3
     else:
         fold_num = 10
 
     for train, test in KFoldSplit_df(model(), fold_num):
-        if method_id == 0:
+        if methodologyId == 0:
             res = ABE0(train, test)
-        elif method_id == 1:
+        elif methodologyId == 1:
             res = RANDOM40(train, test)
-        elif method_id == 2:
+        elif methodologyId == 2:
             res = RANDOM160(train, test)
-        elif method_id == 3:
+        elif methodologyId == 3:
             res = DE2(train, test)
-        elif method_id == 4:
+        elif methodologyId == 4:
             res = DE8(train, test)
 
-        with open('new_test.txt', 'a+') as f:
+        time.sleep(random.random() * 2)  # avoid writing conflicts
+        with open('final_list.txt', 'a+') as f:
+            print("Finishing " + str(sys.argv))
             f.write(
-                str(data_id) + ';' + str(method_id) + ';' + str(res[0]) + ';' + str(res[1]) + ';' +
+                str(modelIndex) + ';' + str(methodologyId) + ';' + str(res[0]) + ';' + str(res[1]) + ';' +
                 str(list(map(int, res[2].tolist()))) + '\n')
 
 
+def run():
+    """
+    system arguments:
+        1 modelIndex,
+        2 methodology ID [0-ABE0, 1-RANDOM40, 2-RANDOM160, 3-DE2, 4-DE8]
+        3 core Num, or the repeat times
+    :return:
+    """
+
+    if len(sys.argv) > 1:
+        modelIndex, methodologyId, repeatNum = int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3])
+    else:  # for default local run
+        modelIndex, methodologyId, repeatNum = 0, 1, 1
+    time1 = time.time()
+    p = list()
+    for i in range(repeatNum):
+        p.append(Process(target=exec, args=(modelIndex, methodologyId)))
+        p[-1].start()
+
+    for i in range(repeatNum):
+        p[i].join()
+    print("total time = " + str(time.time() - time1))
+
+
 if __name__ == '__main__':
-    # repeats = 20     ################# repeat times
-    # for _ in range(repeats):
-    #     local_run()
-    hpc()
+    run()
