@@ -120,7 +120,7 @@ def run():
     if len(sys.argv) > 1:
         modelIndex, methodologyId, repeatNum = int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3])
     else:  # for default local run
-        modelIndex, methodologyId, repeatNum = 0, 1, 1
+        modelIndex, methodologyId, repeatNum = 0, 3, 1
     time1 = time.time()
     p = list()
     for i in range(repeatNum):
@@ -133,4 +133,5 @@ def run():
 
 
 if __name__ == '__main__':
-    run()
+    exec(0, 3)
+    # run()

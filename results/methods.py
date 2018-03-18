@@ -2,6 +2,7 @@ import array
 import random
 import sys
 import warnings
+import pdb
 
 from deap import base
 from deap import creator
@@ -80,6 +81,7 @@ def de_estimate(NGEN, trainData, testData):
 
     for best in bests:
         y_predict, y_acutal = abe_execute(S=get_setting_obj(best), train=trainData, test=testData)
+
         RES.append([mre_calc(y_predict, y_acutal), sa_calc(y_predict, y_acutal), best])
 
     if len(RES) == 1:
@@ -114,7 +116,6 @@ def random_strategy(randomTimes, trainData, testData):
     best = hof[0]
 
     y_predict, y_acutal = abe_execute(S=get_setting_obj(best), train=trainData, test=testData)
-
     return mre_calc(y_predict, y_acutal), sa_calc(y_predict, y_acutal), best
 
 
