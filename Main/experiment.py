@@ -26,7 +26,7 @@ import time
 from multiprocessing import Process
 
 from data.new_data import data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki
-from results.methods import de_estimate, random_strategy, abe0_strategy
+from Main.methods import de_estimate, random_strategy, abe0_strategy
 from utils.kfold import KFoldSplit_df
 
 
@@ -42,11 +42,11 @@ def DE28(TrainSet, TestSet):
     return de_estimate([2, 8], TrainSet, TestSet)
 
 
-def RANDOM20(TrainSet, TestSet):
+def RANDOM10(TrainSet, TestSet):
     return random_strategy(10, TrainSet, TestSet)
 
 
-def RANDOM40(TrainSet, TestSet):
+def RANDOM20(TrainSet, TestSet):
     return random_strategy(20, TrainSet, TestSet)
 
 
@@ -79,9 +79,9 @@ def exec(modelIndex, methodologyId):
         if methodologyId == 0:
             res = ABE0(train, test)
         elif methodologyId == 1:
-            res = RANDOM20(train, test)
+            res = RANDOM10(train, test)
         elif methodologyId == 2:
-            res = RANDOM40(train, test)
+            res = RANDOM20(train, test)
         elif methodologyId == 3:
             res = DE2(train, test)
         elif methodologyId == 4:
@@ -112,7 +112,7 @@ def run():
     """
     system arguments:
         1 modelIndex,
-        2 methodology ID [0-ABE0, 1-RANDOM20, 2-RANDOM40, 3-DE2, 4-DE8, 5-DE2/8]
+        2 methodology ID [0-ABE0, 1-RANDOM10, 2-RANDOM20, 3-DE2, 4-DE8, 5-DE2/8]
         3 core Num, or the repeat times
     :return:
     """
@@ -133,5 +133,5 @@ def run():
 
 
 if __name__ == '__main__':
-    exec(0, 3)
-    # run()
+    # exec(0, 3)
+    run()
