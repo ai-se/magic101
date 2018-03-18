@@ -30,10 +30,10 @@ def randlist(a=2, b=7, c=4, d=5, e=3, f=5):
 def de_estimate(NGEN, trainData, testData):
     """
 
-    :param NGEN:
+    :param NGEN: list or int
     :param trainData:
     :param testData:
-    :return: mre, sa, best configuration
+    :return: mre, sa, best configuration. IF NGEN IS A LIST, RETURN A LIST [[mre,sa, best confi][mre,sa,best config],...]
     """
 
     def evaluateFunc(config):
@@ -55,8 +55,12 @@ def de_estimate(NGEN, trainData, testData):
     for ind in pop:
         fitness = toolbox.evaluate(ind)
         ind.fitness.values = fitness
+    if type(NGEN) is not list:
+        NGEN = [NGEN]
 
-    for g in range(1, NGEN + 1):
+    bests = list()
+
+    for g in range(1, max(NGEN) + 1):
         for k, agent in enumerate(pop):
             a, b, c = toolbox.select(pop)
             y = toolbox.clone(agent)
@@ -69,11 +73,19 @@ def de_estimate(NGEN, trainData, testData):
             if y.fitness > agent.fitness:
                 pop[k] = y
         hof.update(pop)
+        if g in NGEN:
+            bests.append(hof[0])
 
-    best = hof[0]
-    y_predict, y_acutal = abe_execute(S=get_setting_obj(best), train=trainData, test=testData)
+    RES = list()
 
-    return mre_calc(y_predict, y_acutal), sa_calc(y_predict, y_acutal), best
+    for best in bests:
+        y_predict, y_acutal = abe_execute(S=get_setting_obj(best), train=trainData, test=testData)
+        RES.append([mre_calc(y_predict, y_acutal), sa_calc(y_predict, y_acutal), best])
+
+    if len(RES) == 1:
+        return RES[0]
+    else:
+        return RES
 
 
 def random_strategy(randomTimes, trainData, testData):

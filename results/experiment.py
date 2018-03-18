@@ -38,11 +38,15 @@ def DE8(TrainSet, TestSet):
     return de_estimate(8, TrainSet, TestSet)
 
 
-def RANDOM40(TrainSet, TestSet):
+def DE28(TrainSet, TestSet):
+    return de_estimate([2, 8], TrainSet, TestSet)
+
+
+def RANDOM20(TrainSet, TestSet):
     return random_strategy(20, TrainSet, TestSet)
 
 
-def RANDOM160(TrainSet, TestSet):
+def RANDOM40(TrainSet, TestSet):
     return random_strategy(40, TrainSet, TestSet)
 
 
@@ -75,27 +79,40 @@ def exec(modelIndex, methodologyId):
         if methodologyId == 0:
             res = ABE0(train, test)
         elif methodologyId == 1:
-            res = RANDOM40(train, test)
+            res = RANDOM20(train, test)
         elif methodologyId == 2:
-            res = RANDOM160(train, test)
+            res = RANDOM40(train, test)
         elif methodologyId == 3:
             res = DE2(train, test)
         elif methodologyId == 4:
             res = DE8(train, test)
-
+        elif methodologyId == 5:
+            res = DE28(train, test)
         time.sleep(random.random() * 2)  # avoid writing conflicts
-        with open('final_list.txt', 'a+') as f:
-            print("Finishing " + str(sys.argv))
-            f.write(
-                str(modelIndex) + ';' + str(methodologyId) + ';' + str(res[0]) + ';' + str(res[1]) + ';' +
-                str(list(map(int, res[2].tolist()))) + '\n')
+
+        if methodologyId != 5:
+            with open('final_list.txt', 'a+') as f:
+                print("Finishing " + str(sys.argv))
+                f.write(
+                    str(modelIndex) + ';' + str(methodologyId) + ';' + str(res[0]) + ';' + str(res[1]) + ';' +
+                    str(list(map(int, res[2].tolist()))) + '\n')
+        else:  # running DE2/8
+            with open('final_list.txt', 'a+') as f:
+                print("Finishing " + str(sys.argv))
+                f.write(
+                    str(modelIndex) + ';' + '3' + ';' + str(res[0][0]) + ';' + str(res[0][1]) + ';' +
+                    str(list(map(int, res[0][2].tolist()))) + '\n')
+                f.write(
+                    str(modelIndex) + ';' + '4' + ';' + str(res[1][0]) + ';' + str(res[1][1]) + ';' +
+                    str(list(map(int, res[1][2].tolist()))) + '\n'
+                )
 
 
 def run():
     """
     system arguments:
         1 modelIndex,
-        2 methodology ID [0-ABE0, 1-RANDOM40, 2-RANDOM160, 3-DE2, 4-DE8]
+        2 methodology ID [0-ABE0, 1-RANDOM20, 2-RANDOM20, 3-DE2, 4-DE8, 5-DE2/8]
         3 core Num, or the repeat times
     :return:
     """
