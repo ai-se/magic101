@@ -43,11 +43,11 @@ def DE28(TrainSet, TestSet):
 
 
 def RANDOM20(TrainSet, TestSet):
-    return random_strategy(20, TrainSet, TestSet)
+    return random_strategy(10, TrainSet, TestSet)
 
 
 def RANDOM40(TrainSet, TestSet):
-    return random_strategy(40, TrainSet, TestSet)
+    return random_strategy(20, TrainSet, TestSet)
 
 
 def ABE0(TrainSet, TestSet):
