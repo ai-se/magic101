@@ -43,11 +43,11 @@ def DE28(TrainSet, TestSet):
 
 
 def RANDOM20(TrainSet, TestSet):
-    return random_strategy(20, TrainSet, TestSet)
+    return random_strategy(10, TrainSet, TestSet)
 
 
 def RANDOM40(TrainSet, TestSet):
-    return random_strategy(40, TrainSet, TestSet)
+    return random_strategy(20, TrainSet, TestSet)
 
 
 def ABE0(TrainSet, TestSet):
@@ -112,7 +112,7 @@ def run():
     """
     system arguments:
         1 modelIndex,
-        2 methodology ID [0-ABE0, 1-RANDOM20, 2-RANDOM20, 3-DE2, 4-DE8, 5-DE2/8]
+        2 methodology ID [0-ABE0, 1-RANDOM20, 2-RANDOM40, 3-DE2, 4-DE8, 5-DE2/8]
         3 core Num, or the repeat times
     :return:
     """
