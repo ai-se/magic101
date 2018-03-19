@@ -18,7 +18,8 @@ def data_china():
 def data_desharnais():
     raw_data = loadarff("./data/desharnais.arff")
     df_data = pd.DataFrame(raw_data[0])
-    new_desh = df_data.drop(index=[37, 43, 65, 74], columns=['Project', 'YearEnd', 'Envergure', 'PointsNonAjust', 'Language'])
+    new_desh = df_data.drop(index=[37, 43, 65, 74],
+                            columns=['Project', 'YearEnd', 'Envergure', 'PointsNonAjust', 'Language'])
     columnsTitles = ['TeamExp', 'ManagerExp', 'Length', 'Transactions', 'Entities', 'PointsAdjust', 'Effort']
     new_desh = new_desh.reindex(columns=columnsTitles)
     return new_desh
@@ -53,3 +54,31 @@ def data_miyazaki():
     new_miya = df_data.drop(columns=['ID'])
     return new_miya
 
+
+def latex_print_detail(func):
+    s = func.__name__[5:]
+    df = func()
+    attr_nums = len(df.columns)
+    print('\multirow{%d}{*}{\\begin{sideways}%s\\end{sideways}\\begin{sideways}(%d)\\end{sideways}}' % (
+    attr_nums, s, df.shape[0]))
+    for attr in df.columns:
+        name = attr
+        m = df[attr].min()
+        M = df[attr].max()
+        avg = df[attr].mean()
+        sd = df[attr].std()
+        print("& %s & %.0f & %.0f & %.2f & %.2f\\\\" % (name, m, M, avg, sd))
+    print('\\hline')
+
+
+def latex_print_all_details():
+    latex_print_detail(data_albrecht)
+    latex_print_detail(data_desharnais)
+    latex_print_detail(data_finnish)
+    latex_print_detail(data_kemerer)
+    latex_print_detail(data_maxwell)
+    latex_print_detail(data_miyazaki)
+
+
+if __name__ == '__main__':
+    latex_print_all_details()
