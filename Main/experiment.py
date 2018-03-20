@@ -25,8 +25,8 @@ import sys
 import time
 from multiprocessing import Process
 
-from data.new_data import data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki
 from Main.methods import de_estimate, random_strategy, abe0_strategy
+from data.new_data import data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki
 from utils.kfold import KFoldSplit_df
 
 
@@ -121,6 +121,11 @@ def run():
         modelIndex, methodologyId, repeatNum = int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3])
     else:  # for default local run
         modelIndex, methodologyId, repeatNum = 0, 3, 1
+
+    if repeatNum == 1:
+        exec(modelIndex, methodologyId)
+        sys.exit(0)
+
     time1 = time.time()
     p = list()
     for i in range(repeatNum):

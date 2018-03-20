@@ -47,7 +47,6 @@
 from __future__ import division
 
 import logging
-import pdb
 
 import pandas as pd
 
@@ -69,7 +68,6 @@ def abe_execute(S, train, test):
     :param test:
     :return:
     """
-
     # for convenience, use negative index for test
     test = test.set_index(pd.RangeIndex(start=-1, stop=-test.shape[0] - 1, step=-1))
 
@@ -82,7 +80,8 @@ def abe_execute(S, train, test):
     combined = ABE.normalize.normalize(combined)
 
     logging.debug("Discretization -- " + S.discretization.__name__)
-    combined = S.discretization(combined)
+    if S.weighting in [ABE.weighting.gain_rank, ABE.weighting.relief]:
+        combined = S.discretization(combined)
 
     logging.debug("Feature weighting -- " + S.weighting.__name__)
     combined = S.weighting(combined)
