@@ -2,6 +2,7 @@ import numpy as np
 
 from ABE.main import abe_execute
 from ABE.main import gen_setting_obj
+from utils.kfold import KFoldSplit_df
 
 
 def get_setting_obj(configurationIndex):
@@ -38,6 +39,8 @@ def mre_calc(y_predict, y_actual):
     for predict, actual in zip(y_predict, y_actual):
         mre.append(abs(predict - actual) / (actual + 0.0001))
     MRE = np.median(mre)
+    if MRE == 0:
+        MRE = np.mean(mre)
     return MRE
 
 
@@ -61,3 +64,12 @@ def transform(configurationIndex, trainData, testData):
     """
     Y_predict, Y_actual = abe_execute(S=get_setting_obj(configurationIndex), train=trainData, test=testData)
     return mre_calc(Y_predict, Y_actual),
+
+
+if __name__ == '__main__':
+    from data import new_data
+
+    for _ in range(100):
+        for x, y in KFoldSplit_df(new_data.data_desharnais(), 10):
+            p = transform(np.array([2, 3, 4, 1, 2, 0]), x, y)
+            print(p)
