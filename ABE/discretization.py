@@ -23,11 +23,9 @@
 
 
 from __future__ import division
-import pandas as pd
+
 import numpy as np
-import warnings
-import sys
-import pdb
+import pandas as pd
 
 """
 Five discretization Methods
@@ -48,23 +46,22 @@ def do_nothing(df):
     return df
 
 
-def equal_frequency(df, groupSize=3):
+def equal_frequency(df, groupSize=10):
     """
     by default, groupsize=10. i.e. discrete all into 10 groups. each group, value should be median of original values
     :param df:
     :param groupSize:
     :return:
     """
-    # for c_i in range(df.shape[1]):
-    #     maps = pd.qcut(df.iloc[:, c_i], groupSize)
-    #     map_v = np.zeros([df.shape[0], 1])
-    #     for r_i, m in enumerate(maps):
-    #         x = m.left
-    #         y = m.right
-    #         map_v[r_i] = (y + x) / 2
-    #     df.iloc[:, c_i] = map_v
-    # return df
-    return do_nothing(df)
+    for c_i in range(df.shape[1] - 1):
+        maps = pd.qcut(df.iloc[:, c_i], groupSize, duplicates='drop')
+        map_v = np.zeros([df.shape[0], 1])
+        for r_i, m in enumerate(maps):
+            x = m.left
+            y = m.right
+            map_v[r_i] = (y + x) / 2
+        df.iloc[:, c_i] = map_v
+    return df
 
 
 def equal_width(df, groupSize=10):
@@ -74,7 +71,7 @@ def equal_width(df, groupSize=10):
     :param groupSize:
     :return:
     """
-    for c_i in range(df.shape[1]):
+    for c_i in range(df.shape[1] - 1):
         maps = pd.cut(df.iloc[:, c_i], groupSize)
         map_v = np.zeros([df.shape[0], 1])
         for r_i, m in enumerate(maps):
@@ -92,6 +89,7 @@ def entropy(df):
     :param df:
     :return:
     """
+
     # TODO
     def calc_ent(vect):
         """
