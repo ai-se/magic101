@@ -18,7 +18,7 @@ from Optimizer.feature_link import transform, get_setting_obj, mre_calc, sa_calc
 NDIM = 6
 
 
-def randlist(a=2, b=7, c=4, d=5, e=3, f=5):
+def randlist(a=1, b=7, c=2, d=5, e=3, f=5):
     k = [random.randint(0, a),
          random.randint(0, b),
          random.randint(0, c),
@@ -66,7 +66,7 @@ def de_estimate(NGEN, trainData, testData):
             a, b, c = toolbox.select(pop)
             y = toolbox.clone(agent)
             index = random.randrange(NDIM)
-            lis = [2, 7, 4, 5, 3, 5]
+            lis = [1, 7, 2, 5, 3, 5]
             for i, value in enumerate(agent):
                 if i == index or random.random() < CR:
                     y[i] = (a[i] + F * (b[i] - c[i])) % lis[i]
