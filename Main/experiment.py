@@ -26,7 +26,8 @@ import time
 from multiprocessing import Process
 
 from Main.methods import de_estimate, random_strategy, abe0_strategy
-from data.new_data import data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki
+from data.new_data import data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki, \
+    data_china, data_isbsg10, data_kitchenham
 from utils.kfold import KFoldSplit_df
 
 
@@ -54,7 +55,7 @@ def ABE0(TrainSet, TestSet):
     return abe0_strategy(TrainSet, TestSet)
 
 
-def WHIGHAM():
+def ATLM():
     pass
 
 
@@ -65,7 +66,8 @@ def exec(modelIndex, methodologyId):
     :return: writing to final_list.txt
         ^^^^ repeatID mre sa
     """
-    datafunc = [data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki]
+    datafunc = [data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki,
+                data_china, data_isbsg10, data_kitchenham]
     model = datafunc[modelIndex]
     res = None
 
@@ -92,13 +94,13 @@ def exec(modelIndex, methodologyId):
 
         if methodologyId != 5:
             with open('final_list.txt', 'a+') as f:
-                print("Finishing " + str(sys.argv))
+                # print("Finishing " + str(sys.argv))
                 f.write(
                     str(modelIndex) + ';' + str(methodologyId) + ';' + str(res[0]) + ';' + str(res[1]) + ';' +
                     str(list(map(int, res[2].tolist()))) + '\n')
         else:  # running DE2/8
             with open('final_list.txt', 'a+') as f:
-                print("Finishing " + str(sys.argv))
+                # print("Finishing " + str(sys.argv))
                 f.write(
                     str(modelIndex) + ';' + '3' + ';' + str(res[0][0]) + ';' + str(res[0][1]) + ';' +
                     str(list(map(int, res[0][2].tolist()))) + '\n')
@@ -111,19 +113,22 @@ def exec(modelIndex, methodologyId):
 def run():
     """
     system arguments:
-        1 modelIndex,
+        1 modelIndex [0-albrecht, 1-desharnais, 2-finnish, 3-kemerer, 4-maxwell, 5-miyazaki, 6-china, 7-isbsg10, 8-kitchenham]
         2 methodology ID [0-ABE0, 1-RANDOM10, 2-RANDOM20, 3-DE2, 4-DE8, 5-DE2/8]
         3 core Num, or the repeat times
     :return:
     """
+    start_time = time.time()
 
     if len(sys.argv) > 1:
         modelIndex, methodologyId, repeatNum = int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3])
     else:  # for default local run
-        modelIndex, methodologyId, repeatNum = 0, 3, 1
+        modelIndex, methodologyId, repeatNum = 8, 0, 1
 
     if repeatNum == 1:
+        time2 = time.time()
         exec(modelIndex, methodologyId)
+        print("total time = " + str(time.time() - time2))
         sys.exit(0)
 
     time1 = time.time()
@@ -135,6 +140,8 @@ def run():
     for i in range(repeatNum):
         p[i].join()
     print("total time = " + str(time.time() - time1))
+
+    print("--- %s seconds ---" % (time.time() - start_time))
 
 
 if __name__ == '__main__':
