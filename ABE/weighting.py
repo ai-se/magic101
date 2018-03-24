@@ -335,99 +335,101 @@ def wrapper_subset(df):
     return df[selected_features]
 
 
+# def genetic_weighting(df):
+#     """
+#     THIS METHOD WILL CREATE A NEW DATAFRAME
+#     :param df:
+#     :return:
+#     """
+#     n = len(df.columns) - 1
+#
+#     creator.create("FitnessMax_", base.Fitness, weights=(1.0,))
+#     creator.create("Individual_", list, fitness=creator.FitnessMax_)
+#
+#     toolbox = base.Toolbox()
+#     toolbox.register("attr_bool", random.randint, 0, 1)
+#     toolbox.register("individual", tools.initRepeat, creator.Individual_, toolbox.attr_bool, 14 * n)
+#     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+#
+#     def trans_weights2(popn):
+#         popn = popn[0]
+#         weights = list()
+#
+#         tmp = 0
+#         for i, v in enumerate(popn):
+#             tmp += 2 ** (13 - i % 14) * v
+#             if i % 14 == 13:
+#                 weights.append(tmp)
+#                 tmp = 0
+#         weights = [i / float(2 ** 14 - 1) for i in weights]
+#         return weights
+#
+#     def fitness_function(df, w=1):
+#         X = df.iloc[:, :-1]
+#         Y = df.iloc[:, -1:]
+#         X_W = X * w
+#
+#         clf = KNeighborsRegressor(n_neighbors=5)
+#         clf.fit(X_W, Y)
+#
+#         Y_predict = clf.predict(X_W)
+#         Y_predict = [i[0] for i in Y_predict]
+#         Y_actual = np.ravel(Y)
+#
+#         MRE = abs(Y_actual - Y_predict) / (Y_actual + 0.0001)
+#         MMRE = sum(MRE) / len(MRE)
+#         f = 1 / (MMRE + 0.0001)
+#         return f
+#
+#     def eval_max(individual):
+#         w = trans_weights2([individual])
+#         f = fitness_function(df, w)
+#         return f
+#
+#     toolbox.register("evaluate", eval_max)
+#     toolbox.register("mate", tools.cxOnePoint)
+#     toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
+#     toolbox.register("select", tools.selRoulette)
+#     random.seed()
+#
+#     pop = toolbox.population(n=10)
+#     CXPB, MUTPB = 0.7, 0.1
+#     temp_list = list(map(toolbox.evaluate, pop))
+#     fitnesses = list(zip(temp_list, ))
+#
+#     for ind, fit in zip(pop, fitnesses):
+#         ind.fitness.values = fit
+#
+#     for g in range(100):
+#         offspring = toolbox.select(pop, len(pop))
+#         offspring = list(map(toolbox.clone, offspring))
+#
+#         for child1, child2 in zip(offspring[::2], offspring[1::2]):
+#             if random.random() < CXPB:
+#                 toolbox.mate(child1, child2)
+#                 del child1.fitness.values
+#                 del child2.fitness.values
+#
+#         for mutant in offspring:
+#             if random.random() < MUTPB:
+#                 toolbox.mutate(mutant)
+#                 del mutant.fitness.values
+#
+#         invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
+#         map(toolbox.evaluate, invalid_ind)
+#         temp_list = list(map(toolbox.evaluate, invalid_ind))
+#
+#         fitnesses0 = list(zip(temp_list, ))
+#
+#         for ind, fit in zip(invalid_ind, fitnesses0):
+#             ind.fitness.values = fit
+#
+#         pop[:] = offspring
+#
+#     best_ind = tools.selBest(pop, 1)[0]
+#
+#     final_weights = trans_weights2([best_ind])
+#     final_weights.append(1)
+#     return df * final_weights
 def genetic_weighting(df):
-    """
-    THIS METHOD WILL CREATE A NEW DATAFRAME
-    :param df:
-    :return:
-    """
-    n = len(df.columns) - 1
-
-    creator.create("FitnessMax_", base.Fitness, weights=(1.0,))
-    creator.create("Individual_", list, fitness=creator.FitnessMax_)
-
-    toolbox = base.Toolbox()
-    toolbox.register("attr_bool", random.randint, 0, 1)
-    toolbox.register("individual", tools.initRepeat, creator.Individual_, toolbox.attr_bool, 14 * n)
-    toolbox.register("population", tools.initRepeat, list, toolbox.individual)
-
-    def trans_weights2(popn):
-        popn = popn[0]
-        weights = list()
-
-        tmp = 0
-        for i, v in enumerate(popn):
-            tmp += 2 ** (13 - i % 14) * v
-            if i % 14 == 13:
-                weights.append(tmp)
-                tmp = 0
-        weights = [i / float(2 ** 14 - 1) for i in weights]
-        return weights
-
-    def fitness_function(df, w=1):
-        X = df.iloc[:, :-1]
-        Y = df.iloc[:, -1:]
-        X_W = X * w
-
-        clf = KNeighborsRegressor(n_neighbors=5)
-        clf.fit(X_W, Y)
-
-        Y_predict = clf.predict(X_W)
-        Y_predict = [i[0] for i in Y_predict]
-        Y_actual = np.ravel(Y)
-
-        MRE = abs(Y_actual - Y_predict) / (Y_actual + 0.0001)
-        MMRE = sum(MRE) / len(MRE)
-        f = 1 / (MMRE + 0.0001)
-        return f
-
-    def eval_max(individual):
-        w = trans_weights2([individual])
-        f = fitness_function(df, w)
-        return f
-
-    toolbox.register("evaluate", eval_max)
-    toolbox.register("mate", tools.cxOnePoint)
-    toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
-    toolbox.register("select", tools.selRoulette)
-    random.seed()
-
-    pop = toolbox.population(n=10)
-    CXPB, MUTPB = 0.7, 0.1
-    temp_list = list(map(toolbox.evaluate, pop))
-    fitnesses = list(zip(temp_list, ))
-
-    for ind, fit in zip(pop, fitnesses):
-        ind.fitness.values = fit
-
-    for g in range(100):
-        offspring = toolbox.select(pop, len(pop))
-        offspring = list(map(toolbox.clone, offspring))
-
-        for child1, child2 in zip(offspring[::2], offspring[1::2]):
-            if random.random() < CXPB:
-                toolbox.mate(child1, child2)
-                del child1.fitness.values
-                del child2.fitness.values
-
-        for mutant in offspring:
-            if random.random() < MUTPB:
-                toolbox.mutate(mutant)
-                del mutant.fitness.values
-
-        invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
-        map(toolbox.evaluate, invalid_ind)
-        temp_list = list(map(toolbox.evaluate, invalid_ind))
-
-        fitnesses0 = list(zip(temp_list, ))
-
-        for ind, fit in zip(invalid_ind, fitnesses0):
-            ind.fitness.values = fit
-
-        pop[:] = offspring
-
-    best_ind = tools.selBest(pop, 1)[0]
-
-    final_weights = trans_weights2([best_ind])
-    final_weights.append(1)
-    return df * final_weights
+    return df
