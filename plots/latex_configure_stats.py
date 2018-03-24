@@ -109,7 +109,7 @@ def latex_plot(model_name, data_id):
 
 
 def latex_plot_all_density():
-    model_names = ['albrecht', 'desharnais', 'finnish', 'kemerer', 'maxwell', 'miyazaki']
+    model_names = ['albrecht', 'desharnais', 'finnish', 'kemerer', 'maxwell', 'miyazaki', 'china', 'isbsg10', 'kitchenham']
     for i, n in enumerate(model_names):
         latex_plot(n, i)
 
