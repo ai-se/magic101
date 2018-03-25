@@ -37,7 +37,7 @@ def get_setting_obj(configurationIndex):
 def mre_calc(y_predict, y_actual):
     mre = []
     for predict, actual in zip(y_predict, y_actual):
-        mre.append(abs(predict - actual) / (actual + 0.0001))
+        mre.append(abs(predict - actual) / (actual))
     MRE = np.median(mre)
     if MRE == 0:
         MRE = np.mean(mre)
