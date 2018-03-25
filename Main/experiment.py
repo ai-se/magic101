@@ -123,7 +123,7 @@ def run():
     if len(sys.argv) > 1:
         modelIndex, methodologyId, repeatNum = int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3])
     else:  # for default local run
-        modelIndex, methodologyId, repeatNum = 4, 1, 1
+        modelIndex, methodologyId, repeatNum = 0, 5, 1
 
     if repeatNum == 1:
         time2 = time.time()
