@@ -49,7 +49,7 @@ from __future__ import division
 import logging
 
 import pandas as pd
-
+import sys
 import ABE.adaptation
 import ABE.analogies
 import ABE.discretization
@@ -57,7 +57,11 @@ import ABE.measures
 import ABE.normalize
 import ABE.subSelector
 import ABE.weighting
+# from Optimizer.feature_link import sa_calc
 from utils.bunch import ABE_configures
+from utils.kfold import KFoldSplit_df
+from data.new_data import data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki, \
+    data_china, data_isbsg10, data_kitchenham
 
 
 def abe_execute(S, train, test):
@@ -141,18 +145,21 @@ def gen_setting_obj(S_str):
 
     return S
 
-# if __name__ == '__main__':
-#     """
-#     ABE algorithm Demonstration
-#     """
-#     logging.basicConfig(stream=sys.stdout,
-#                         format='[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
-#                         level=logging.DEBUG)
-#
-#     settings = gen_setting_obj(
-#         ['outlier', 'maximum_measure', 'analogy_dynamic', 'weighted_mean'])
-#
-#     for meta, train, test in KFoldSplit("data/maxwell.arff", folds=10):
-#         trainData = pd.DataFrame(data=train)
-#         testData = pd.DataFrame(data=test)
-#         error = abe_execute(S=settings, train=trainData, test=testData)
+if __name__ == '__main__':
+    """
+    ABE algorithm Demonstration
+    """
+    logging.basicConfig(stream=sys.stdout,
+                        format='[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
+                        level=logging.DEBUG)
+
+    settings = gen_setting_obj(
+        ['outlier', 'maximum_measure', 'analogy_dynamic', 'relief'])
+
+    for  train, test in KFoldSplit_df(data_isbsg10(), folds=3):
+        trainData = pd.DataFrame(data=train)
+        testData = pd.DataFrame(data=test)
+        Y_predict, Y_actual = abe_execute(S=settings, train=trainData, test=testData)
+        import pdb
+        pdb.set_trace()
+        # print(sa_calc(Y_predict, Y_actual))

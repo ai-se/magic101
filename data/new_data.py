@@ -282,5 +282,5 @@ def latex_print_all_details():
 
 
 if __name__ == '__main__':
-    latex_print_all_details()
-    # print(data_kitchenham())
+    # latex_print_all_details()
+    print(data_maxwell())
