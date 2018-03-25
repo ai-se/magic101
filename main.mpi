@@ -1,13 +1,13 @@
 #!/bin/bash
 
-#SBATCH -J magic101            # Job name
-#SBATCH -o out/job.%j.out     # Name of stdout output file (%j expands to jobId)
-#SBATCH -N 1                 # Total number of nodes requested
-#SBATCH -n 10                 # Total number of mpi tasks requested
-#SBATCH -x c[79-98,101-107]
-#SBATCH -t 7:00:00           # Run time (hh:mm:ss)
+#SBATCH -J magic101  # job name
+#SBATCH -o out/job.%j.out # name of stdout
+#SBATCH -e err/job.%j.err # name of stderr
+#SBATCH -N 1   # total number of nodes
+#SBATCH -n 10   # total number of mpi cores
+#SBATCH -x c[79-98,101-107]  # avoid
+#SBATCH -t 7:00:00   # rum time (hhmmss)
 
-# Launch MPI-based executable
 cd /home/jchen37/magic101
 source addroot.sh
-/home/jchen37/anaconda3/bin/python3 Main/experiment.py $1 $2 10
+/home/jchen37/anaconda3/bin/python3 Main/experiment.py $1 $2 $10
