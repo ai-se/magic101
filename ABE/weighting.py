@@ -108,7 +108,8 @@ def gain_rank(df):
     weights.index = df.index
 
     res = weights * df
-    return res
+
+    return res[df.columns]
 
 
 def relief(df, measures=ABE.measures.default):
@@ -143,7 +144,7 @@ def relief(df, measures=ABE.measures.default):
     weights = weights.append([weights] * (df.shape[0] - 1), ignore_index=True)
     weights.index = df.index
 
-    return weights * df
+    return (weights * df)[df.columns]
     # return df
 
 
@@ -431,6 +432,6 @@ def wrapper_subset(df):
 #
 #     final_weights = trans_weights2([best_ind])
 #     final_weights.append(1)
-#     return df * final_weights
+#     return (df * final_weights)[df.columns]
 def genetic_weighting(df):
     return df

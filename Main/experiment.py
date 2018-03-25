@@ -24,7 +24,7 @@ import random
 import sys
 import time
 from multiprocessing import Process
-
+from Main.methods import testing
 from Main.methods import de_estimate, random_strategy, abe0_strategy
 from data.new_data import data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki, \
     data_china, data_isbsg10, data_kitchenham
@@ -144,6 +144,19 @@ def run():
     print("--- %s seconds ---" % (time.time() - start_time))
 
 
+def run_testing():
+    """
+    Debugging for a specific dataset under specified configuration indices.
+    repeat 100 times for 3 folds
+    :return:
+    """
+    for _ in range(100):
+        for train, test in KFoldSplit_df(data_isbsg10(), 3):
+            mre, sa, p = (testing(train, test, [1, 3, 2, 0, 0, 3]))
+            print(mre)
+            print(sa)
+
+
 if __name__ == '__main__':
-    # exec(0, 3)
     run()
+    # run_testing()

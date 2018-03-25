@@ -47,7 +47,7 @@
 from __future__ import division
 
 import logging
-
+import pdb
 import pandas as pd
 import sys
 import ABE.adaptation
@@ -79,10 +79,8 @@ def abe_execute(S, train, test):
     train = S.subSelector(train)
     n_train, n_test = train.shape[0], test.shape[0]
     combined = pd.concat([train, test])
-
     logging.debug("Normalization")
     combined = ABE.normalize.normalize(combined)
-
     logging.debug("Discretization -- " + S.discretization.__name__)
     if S.weighting in [ABE.weighting.gain_rank, ABE.weighting.relief]:
         combined = S.discretization(combined)
