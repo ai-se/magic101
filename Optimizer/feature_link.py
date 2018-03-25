@@ -41,9 +41,6 @@ def mre_calc(y_predict, y_actual):
     MRE = np.median(mre)
     if MRE == 0:
         MRE = np.mean(mre)
-    if MRE > 200:
-        import pdb
-        pdb.set_trace()
     return MRE
 
 
