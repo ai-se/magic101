@@ -109,3 +109,7 @@ venv.bak/
 .idea/misc.xml
 .idea/modules.xml
 .idea/workspace.xml
+out/
+err/
+main.sh
+main.mpi
