@@ -1,4 +1,4 @@
-#1/bin/bash
+#!/bin/bash
 rm out/*
 rm err/*
 for i in 7;
@@ -9,4 +9,3 @@ do
 	sbatch -p opteron main.mpi $i $k
 done;
 done;
-
