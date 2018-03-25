@@ -1,0 +1,25 @@
+#!/bin/bash
+rm out/*
+rm err/*
+for i in 7;
+do
+for k in 5;
+do
+        sbatch -p opteron main.mpi $i $k
+        sbatch -p opteron main.mpi $i $k
+done;
+done
+[jchen37@c32 magic101]$ cat main.mpi
+#!/bin/bash
+
+#SBATCH -J magic101            # Job name
+#SBATCH -o out/job.%j.out     # Name of stdout output file (%j expands to jobId)
+#SBATCH -N 1                 # Total number of nodes requested
+#SBATCH -n 10                 # Total number of mpi tasks requested
+#SBATCH -x c[79-98,101-107]
+#SBATCH -t 7:00:00           # Run time (hh:mm:ss)
+
+# Launch MPI-based executable
+cd /home/jchen37/magic101
+source addroot.sh
+/home/jchen37/anaconda3/bin/python3 Main/experiment.py $1 $2 10
