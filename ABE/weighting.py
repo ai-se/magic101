@@ -120,30 +120,31 @@ def relief(df, measures=ABE.measures.default):
     :param df:
     :return:
     """
-    m = 20
-    k = 10
-    weights = pd.DataFrame(data=np.zeros([1, df.shape[1] - 1]), columns=df.columns[:-1])
+#     m = 20
+#     k = 10
+#     weights = pd.DataFrame(data=np.zeros([1, df.shape[1] - 1]), columns=df.columns[:-1])
 
-    target = df.columns[-1]
+#     target = df.columns[-1]
 
-    for i in range(m):
-        selected_row = df.sample(1).iloc[0, :]
-        dists = measures(selected_row, df)
-        df['d_'] = dists
-        hits = df[df[target] == df.iloc[0][-2]].iloc[:, :-1][:k]
-        miss = df[df[target] != df.iloc[0][-2]].iloc[:, :-1][:k]
+#     for i in range(m):
+#         selected_row = df.sample(1).iloc[0, :]
+#         dists = measures(selected_row, df)
+#         df['d_'] = dists
+#         hits = df[df[target] == df.iloc[0][-2]].iloc[:, :-1][:k]
+#         miss = df[df[target] != df.iloc[0][-2]].iloc[:, :-1][:k]
 
-        t1 = np.sum(np.abs(hits - selected_row), axis=0) / (hits.shape[0] * m)
-        t2 = np.sum(np.abs(miss - selected_row), axis=0) / (miss.shape[0] * m)
-        weights = weights - t1 + t2
-        df.drop(['d_'], axis=1, inplace=True)  # clear the distance
-    weights = weights.drop(df.columns[-1], axis=1)
-    weights = np.abs(weights)
-    weights[df.columns[-1]] = 1
-    weights = weights.append([weights] * (df.shape[0] - 1), ignore_index=True)
-    weights.index = df.index
+#         t1 = np.sum(np.abs(hits - selected_row), axis=0) / (hits.shape[0] * m)
+#         t2 = np.sum(np.abs(miss - selected_row), axis=0) / (miss.shape[0] * m)
+#         weights = weights - t1 + t2
+#         df.drop(['d_'], axis=1, inplace=True)  # clear the distance
+#     weights = weights.drop(df.columns[-1], axis=1)
+#     weights = np.abs(weights)
+#     weights[df.columns[-1]] = 1
+#     weights = weights.append([weights] * (df.shape[0] - 1), ignore_index=True)
+#     weights.index = df.index
 
-    return weights * df
+#     return weights * df
+    return df
 
 
 def principal_component(df):
