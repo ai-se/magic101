@@ -8,4 +8,4 @@ do
         sbatch -p opteron main.mpi $i $k
         sbatch -p opteron main.mpi $i $k
 done;
-done
+done;
