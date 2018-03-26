@@ -5,7 +5,7 @@ from random import *
 
 # [0-albrecht, 1-desharnais, 2-finnish, 3-kemerer, 4-maxwell, 5-miyazaki, 6-china, 7-isbsg10, 8-kitchenham]
 # data = pd.read_csv('./final_list_cr0.3_f0.8.txt', sep=";", header=None)
-data = pd.read_csv('./final_list_cr0.7_f0.8.txt', sep=";", header=None)
+data = pd.read_csv('Outputs/final_list_cr0.3_f0.8.txt', sep=";", header=None)
 data.columns = ["Data_ID", "Method_ID", "MRE", "SA", "CONFIG"]
 
 whigham = pd.read_csv('./ATLM.txt', sep=";", header=None)
@@ -60,7 +60,7 @@ plt.yscale('linear')           # linear, log, symlog, logit
 # plt.ylabel('MRE', fontsize=30, fontweight='bold')
 plt.ylabel('MRE')
 plt.ylim(-0.1, 1.25)
-# plt.yticks([0,0.25,0.5,0.75,1])                                            I
+# plt.yticks([0,0.25,0.5,0.75,1])
 plt.legend(['ABE0', 'RD40', 'RD160', 'DE2', 'DE8', 'ATLM'], loc='upper left', fontsize = 'small')
 # plt.xlabel('Dataset: desharnais', fontsize=30)
 # plt.xlabel('Dataset: miyazaki')
