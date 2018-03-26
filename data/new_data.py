@@ -265,7 +265,7 @@ def latex_print_detail(func):
         M = df[attr].max()
         avg = df[attr].mean()
         sd = df[attr].std()
-        print("& %s & %.0f & %.0f & %.2f & %.2f\\\\" % (name, m, M, avg, sd))
+        print("& %s & %.0f & %.0f & %.1f & %.1f\\\\" % (name, m, M, avg, sd))
     print('\\hline')
 
 
@@ -276,11 +276,12 @@ def latex_print_all_details():
     latex_print_detail(data_kemerer)
     latex_print_detail(data_maxwell)
     latex_print_detail(data_miyazaki)
-    latex_print_detail(data_china())
-    latex_print_detail(data_isbsg10())
-    latex_print_detail(data_kitchenham())
+    latex_print_detail(data_china)
+    latex_print_detail(data_isbsg10)
+    latex_print_detail(data_kitchenham)
 
 
 if __name__ == '__main__':
     latex_print_all_details()
-    # print(data_maxwell())
+    # print(data_china().shape)
+    # latex_print_detail(data_albrecht)
