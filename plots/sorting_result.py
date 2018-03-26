@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt
 from random import *
 
 # [0-albrecht, 1-desharnais, 2-finnish, 3-kemerer, 4-maxwell, 5-miyazaki, 6-china, 7-isbsg10, 8-kitchenham]
-data = pd.read_csv('./final_list_cr0.3_f0.8.txt', sep=";", header=None)
+# data = pd.read_csv('./final_list_cr0.3_f0.8.txt', sep=";", header=None)
+data = pd.read_csv('./final_list_cr0.7_f0.8.txt', sep=";", header=None)
 data.columns = ["Data_ID", "Method_ID", "MRE", "SA", "CONFIG"]
 
 whigham = pd.read_csv('./ATLM.txt', sep=";", header=None)
@@ -14,10 +15,6 @@ whigham.columns = ["Data", "Method", "MRE", "SA"]
 df15 = whigham.query('Data == ["kitchenham"] and Method == ["ATLM"]')
 df15_MRE = sorted(df15.loc[:,"MRE"])
 df15_SA = sorted(df15.loc[:,"SA"])
-
-# print(len(data.query('Data_ID == ["8"]')))
-# print(df15)
-# dataset = albrecht, method = DE2
 
 data_index = 8
 

@@ -39,10 +39,10 @@ def reading(model_index, model_name):
     if type(model_index) is int:
         model_index = str(model_index)
 
-    data = pd.read_csv('./final_list_cr0.3_f0.8.txt', sep=";", header=None)
+    data = pd.read_csv('Outputs/final_list_cr0.3_f0.8.txt', sep=";", header=None)
     data.columns = ["Data_ID", "Method_ID", "MRE", "SA", "CONFIG"]
 
-    whigham = pd.read_csv('./ATLM.txt', sep=";", header=None)
+    whigham = pd.read_csv('Outputs/ATLM.txt', sep=";", header=None)
     whigham.columns = ["Data", "Method", "MRE", "SA"]
     df15 = whigham.query('Data == ["' + model_name + '"] and Method == ["ATLM"]')
 
