@@ -42,7 +42,7 @@ def de_estimate(NGEN, trainData, testData):
 
     # Differential evolution parameters
     CR = 0.7
-    F = 0.8
+    F = 0.4
     MU = 20
 
     toolbox = base.Toolbox()
