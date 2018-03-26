@@ -41,7 +41,7 @@ def de_estimate(NGEN, trainData, testData):
         return transform(config, trainData, testData)
 
     # Differential evolution parameters
-    CR = 0.7
+    CR = 0.3
     F = 0.4
     MU = 20
 
