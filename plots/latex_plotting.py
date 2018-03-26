@@ -25,7 +25,8 @@ import os
 
 from plots.parse_outputs import reading
 
-model_names = ['albrecht', 'desharnais', 'finnish', 'kemerer', 'maxwell', 'miyazaki', 'china', 'isbsg10', 'kitchenham']
+model_names = ['albrecht', 'desharnais', 'finnish', 'kemerer', 'maxwell',
+               'miyazaki', 'china', 'isbsg10', 'kitchenham']
 
 
 def plot_latex_mre(model_index, model_name):

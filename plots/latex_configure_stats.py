@@ -37,7 +37,7 @@ def most_common(lst):
 
 
 def counting(data_id):
-    data = pd.read_csv('Outputs/final_list_cr0.3_f0.8.txt', sep=";", header=None)
+    data = pd.read_csv('Outputs/final_list_cr0.7_f0.8.txt', sep=";", header=None)
     data.columns = ["Data_ID", "Method_ID", "MRE", "SA", "CONFIG"]
     new_data = data.query('Data_ID == ["' + str(data_id) +
                           '"] and Method_ID == ["' + str(4) +
