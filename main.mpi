@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH -J magic101  # job name
+#SBATCH -J OIL  # job name
 #SBATCH -o out/job.%j.out # name of stdout
 #SBATCH -e err/job.%j.err # name of stderr
 #SBATCH -N 1   # total number of nodes
