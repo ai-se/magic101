@@ -28,17 +28,16 @@ def randlist(a=1, b=7, c=2, d=5, e=3, f=5):
     return k
 
 
-def de_estimate(NGEN, trainData, testData):
+def de_estimate(NGEN, data):
     """
 
     :param NGEN: list or int
-    :param trainData:
-    :param testData:
+    :param data:
     :return: mre, sa, best configuration. IF NGEN IS A LIST, RETURN A LIST [[mre,sa, best confi][mre,sa,best config],...]
     """
 
     def evaluateFunc(config):
-        return transform(config, trainData, testData)
+        return transform(config, data)
 
     # Differential evolution parameters
     CR = 0.5
@@ -59,8 +58,7 @@ def de_estimate(NGEN, trainData, testData):
     if type(NGEN) is not list:
         NGEN = [NGEN]
 
-    bests = list()
-
+    RES = list()
     for g in range(1, max(NGEN) + 1):
         for k, agent in enumerate(pop):
             a, b, c = toolbox.select(pop)
@@ -74,15 +72,14 @@ def de_estimate(NGEN, trainData, testData):
             if y.fitness > agent.fitness:
                 pop[k] = y
         hof.update(pop)
+
+        # TODO add stopping rules here
+        # ...
+
         if g in NGEN:
-            bests.append(hof[0])
-
-    RES = list()
-
-    for best in bests:
-        y_predict, y_acutal = abe_execute(S=get_setting_obj(best), train=trainData, test=testData)
-
-        RES.append([mre_calc(y_predict, y_acutal), sa_calc(y_predict, y_acutal), best])
+            best = hof[0].tolist()
+            best = [int(i) for i in best]
+            RES.append(best)
 
     if len(RES) == 1:
         return RES[0]
@@ -90,16 +87,15 @@ def de_estimate(NGEN, trainData, testData):
         return RES
 
 
-def random_strategy(randomTimes, trainData, testData):
+def random_strategy(randomTimes, data):
     """
     :param randomTimes:
-    :param trainData:
-    :param testData:
-    :return: mre, sa, best configuration
+    :param data:
+    :return: best_config
     """
 
     def evaluateFunc(config):
-        return transform(config, trainData, testData)
+        return transform(config, data)
 
     toolbox = base.Toolbox()
     creator.create("FitnessMin", base.Fitness, weights=[-1.0], )
@@ -115,36 +111,7 @@ def random_strategy(randomTimes, trainData, testData):
     hof.update(pop)
     best = hof[0]
 
-    y_predict, y_acutal = abe_execute(S=get_setting_obj(best), train=trainData, test=testData)
-    return mre_calc(y_predict, y_acutal), sa_calc(y_predict, y_acutal), best
-
-
-def abe0_strategy(trainData, testData):
-    """
-    :param trainData:
-    :param testData:
-    :return: mre, sa, best configuration
-    """
-
-    def evaluateFunc(config):
-        return transform(config, trainData, testData)
-
-    toolbox = base.Toolbox()
-    creator.create("FitnessMin", base.Fitness, weights=[-1.0], )
-    creator.create("Individual", array.array, typecode='d', fitness=creator.FitnessMin)
-    toolbox.register("evaluate", evaluateFunc)
-
-    pop = [creator.Individual([0, 0, 0, 0, 0, 0])]
-    hof = tools.HallOfFame(1)
-    fitness = toolbox.evaluate(pop[0])
-    pop[0].fitness.values = fitness
-
-    hof.update(pop)
-    best = hof[0]
-
-    y_predict, y_acutal = abe_execute(S=get_setting_obj(best), train=trainData, test=testData)
-
-    return mre_calc(y_predict, y_acutal), sa_calc(y_predict, y_acutal), best
+    return best
 
 
 def testing(trainData, testData, methodIds):
