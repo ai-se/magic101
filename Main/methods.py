@@ -43,7 +43,7 @@ def de_estimate(NGEN, data):
     # Differential evolution parameters
     CR = 0.5
     F = 1
-    MU = 20
+    MU = 3
     LIFE = 5
 
     toolbox = base.Toolbox()
