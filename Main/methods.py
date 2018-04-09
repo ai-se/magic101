@@ -7,6 +7,7 @@ import pdb
 from deap import base
 from deap import creator
 from deap import tools
+from numpy import median
 
 from ABE.main import abe_execute
 
@@ -43,6 +44,7 @@ def de_estimate(NGEN, data):
     CR = 0.5
     F = 1
     MU = 20
+    LIFE = 5
 
     toolbox = base.Toolbox()
     creator.create("FitnessMin", base.Fitness, weights=[-1.0], )
@@ -59,7 +61,15 @@ def de_estimate(NGEN, data):
         NGEN = [NGEN]
 
     RES = list()
-    for g in range(1, max(NGEN) + 1):
+    count = 0
+    g = 1
+    fits_old = [ind.fitness.values[0] for ind in pop]
+
+    while count < LIFE and g < max(NGEN) + 1:
+    # for g in range(1, max(NGEN) + 1):
+        g += 1
+        print("count:" + str(count) + " gen:" + str(g))
+
         for k, agent in enumerate(pop):
             a, b, c = toolbox.select(pop)
             y = toolbox.clone(agent)
@@ -73,10 +83,12 @@ def de_estimate(NGEN, data):
                 pop[k] = y
         hof.update(pop)
 
-        # TODO add stopping rules here
-        # ...
+        fits_new = [ind.fitness.values[0] for ind in pop]
+        if median(fits_new) >= median(fits_old):
+            count += 1
+        fits_old = fits_new
 
-        if g in NGEN:
+        if count == LIFE:
             best = hof[0].tolist()
             best = [int(i) for i in best]
             RES.append(best)

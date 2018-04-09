@@ -33,7 +33,7 @@ from Optimizer.feature_link import calc_error
 
 
 def DE2(TrainSet, TestSet):
-    best_config = de_estimate(2, data=TrainSet)
+    best_config = de_estimate(20, data=TrainSet)
     mre, sa = calc_error(best_config, TestSet)
     return {"mre": mre, "sa": sa, "config": best_config}
 
@@ -90,11 +90,13 @@ def exec(modelIndex, methodologyId):
     model = datafunc[modelIndex]
     res = None
 
-    num_pj = len(model())
-    if num_pj < 40:
-        fold_num = 3
-    else:
-        fold_num = 10
+    # num_pj = len(model())
+    # if num_pj < 40:
+    #     fold_num = 3
+    # else:
+    #     fold_num = 10
+
+    fold_num = 3
 
     for train, test in KFoldSplit_df(model(), fold_num):
         if methodologyId == 0:
@@ -122,11 +124,10 @@ def exec(modelIndex, methodologyId):
                 # print("Finishing " + str(sys.argv))
                 f.write(
                     str(modelIndex) + ';' + '3' + ';' + str(res[0]["mre"]) + ';' + str(res[0]["sa"]) + ';' +
-                    str(res[0]["config"]) + '\n')
+                    str(res[0]["config"][0]) + '\n')
                 f.write(
                     str(modelIndex) + ';' + '4' + ';' + str(res[1]["mre"]) + ';' + str(res[1]["sa"]) + ';' +
-                    str(res[1]["config"]) + '\n'
-                )
+                    str(res[1]["config"][1]) + '\n')
 
 
 def run():
@@ -142,7 +143,7 @@ def run():
     if len(sys.argv) > 1:
         modelIndex, methodologyId, repeatNum = int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3])
     else:  # for default local run
-        modelIndex, methodologyId, repeatNum = 0, 3, 1
+        modelIndex, methodologyId, repeatNum = 0, 4, 3
 
     if repeatNum == 1:
         time2 = time.time()
