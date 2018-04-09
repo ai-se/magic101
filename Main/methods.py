@@ -109,7 +109,8 @@ def random_strategy(randomTimes, data):
         ind.fitness.values = fitness
 
     hof.update(pop)
-    best = hof[0]
+    best = hof[0].tolist()
+    best = [int(i) for i in best]
 
     return best
 
