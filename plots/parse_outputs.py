@@ -24,7 +24,7 @@
 
 import pandas as pd
 
-method_names = ['ABE0', 'RANDOM40', 'RANDOM160', 'DE2', 'DE8']
+method_names = ['ABE0', 'RANDOM40', 'RANDOM160', 'DE2', 'DE8', 'DE250', 'GA250']
 
 
 def reading(model_index, model_name):
@@ -39,8 +39,8 @@ def reading(model_index, model_name):
     if type(model_index) is int:
         model_index = str(model_index)
 
-    data = pd.read_csv('Outputs/final_list_cr0.7_f0.8.txt', sep=";", header=None)
-    data.columns = ["Data_ID", "Method_ID", "MRE", "SA", "CONFIG"]
+    data = pd.read_csv('Outputs/final_list.txt', sep=";", header=None)
+    data.columns = ["Data_ID", "Method_ID", "MRE", "SA", "CONFIG", "NGEN"]
 
     whigham = pd.read_csv('Outputs/ATLM.txt', sep=";", header=None)
     whigham.columns = ["Data", "Method", "MRE", "SA"]
@@ -58,7 +58,7 @@ def reading(model_index, model_name):
     with open(sa_file_name, 'a+') as f:
         f.write('ATLM' + '\n' + df15_SA)
 
-    for methodid in range(5):
+    for methodid in range(5, 7):
         df = data.query('Data_ID == ["' + model_index + '"] and Method_ID == ["' + str(methodid) + '"]')
         mre_str = ' '.join([str(i) for i in sorted(df.loc[:, "MRE"])])
         sa_str = ' '.join([str(i) for i in sorted(df.loc[:, "SA"])])
