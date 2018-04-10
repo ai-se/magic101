@@ -23,6 +23,7 @@
 import random
 import sys
 import time
+import pdb
 from multiprocessing import Process
 from Main.methods import testing
 from Main.methods import de_estimate, random_strategy
@@ -33,19 +34,19 @@ from Optimizer.feature_link import calc_error
 
 
 def DE2(TrainSet, TestSet):
-    best_config = de_estimate(20, data=TrainSet)
+    best_config, ngen = de_estimate(2, data=TrainSet)
     mre, sa = calc_error(best_config, TestSet)
-    return {"mre": mre, "sa": sa, "config": best_config}
+    return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
 
 def DE8(TrainSet, TestSet):
-    best_config = de_estimate(8, data=TrainSet)
+    best_config, ngen = de_estimate(8, data=TrainSet)
     mre, sa = calc_error(best_config, TestSet)
-    return {"mre": mre, "sa": sa, "config": best_config}
+    return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
 
 def DE28(TrainSet, TestSet):
-    best_config = de_estimate([2, 8], data=TrainSet)
+    best_config, g = de_estimate([2, 8], data=TrainSet)
     # 2
     mre2, sa2 = calc_error(best_config[0], TestSet)
     # 8
@@ -57,13 +58,13 @@ def DE28(TrainSet, TestSet):
 
 
 def RANDOM10(TrainSet, TestSet):
-    best_config = random_strategy(10, data=TrainSet)
+    best_config = random_strategy(10, data=TrainSet)[0]
     mre, sa = calc_error(best_config, TestSet)
     return {"mre": mre, "sa": sa, "config": best_config}
 
 
 def RANDOM20(TrainSet, TestSet):
-    best_config = random_strategy(20, data=TrainSet)
+    best_config = random_strategy(20, data=TrainSet)[0]
     mre, sa = calc_error(best_config, TestSet)
     return {"mre": mre, "sa": sa, "config": best_config}
 
@@ -72,6 +73,12 @@ def ABE0(TrainSet, TestSet):
     best_config = [0, 0, 0, 0, 0, 0]
     mre, sa = calc_error(best_config, TestSet)
     return {"mre": mre, "sa": sa, "config": best_config}
+
+
+def DE250(TrainSet, TestSet):
+    best_config, ngen = de_estimate(250, data=TrainSet)
+    mre, sa = calc_error(best_config, TestSet)
+    return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
 
 def ATLM():
@@ -110,7 +117,7 @@ def exec(modelIndex, methodologyId):
         elif methodologyId == 4:
             res = DE8(train, test)
         elif methodologyId == 5:
-            res = DE28(train, test)
+            res = DE250(train, test)
         time.sleep(random.random() * 2)  # avoid writing conflicts
 
         if methodologyId != 5:
@@ -119,22 +126,27 @@ def exec(modelIndex, methodologyId):
                 f.write(
                     str(modelIndex) + ';' + str(methodologyId) + ';' + str(res["mre"]) + ';' + str(res["sa"]) + ';' +
                     str(res["config"]) + '\n')
-        else:  # running DE2/8
+        # else:  # running DE2/8
+        #     with open('final_list.txt', 'a+') as f:
+        #         # print("Finishing " + str(sys.argv))
+        #         f.write(
+        #             str(modelIndex) + ';' + '3' + ';' + str(res[0]["mre"]) + ';' + str(res[0]["sa"]) + ';' +
+        #             str(res[0]["config"][0]) + '\n')
+        #         f.write(
+        #             str(modelIndex) + ';' + '4' + ';' + str(res[1]["mre"]) + ';' + str(res[1]["sa"]) + ';' +
+        #             str(res[1]["config"][1]) + '\n')
+        else:  # running DE250
             with open('final_list.txt', 'a+') as f:
                 # print("Finishing " + str(sys.argv))
                 f.write(
-                    str(modelIndex) + ';' + '3' + ';' + str(res[0]["mre"]) + ';' + str(res[0]["sa"]) + ';' +
-                    str(res[0]["config"][0]) + '\n')
-                f.write(
-                    str(modelIndex) + ';' + '4' + ';' + str(res[1]["mre"]) + ';' + str(res[1]["sa"]) + ';' +
-                    str(res[1]["config"][1]) + '\n')
-
+                    str(modelIndex) + ';' + str(methodologyId) + ';' + str(res["mre"]) + ';' + str(res["sa"]) + ';' +
+                    str(res["config"]) + ';' + str(res["gen"]) + '\n')
 
 def run():
     """
     system arguments:
         1 modelIndex [0-albrecht, 1-desharnais, 2-finnish, 3-kemerer, 4-maxwell, 5-miyazaki, 6-china, 7-isbsg10, 8-kitchenham]
-        2 methodology ID [0-ABE0, 1-RANDOM10, 2-RANDOM20, 3-DE2, 4-DE8, 5-DE2/8]
+        2 methodology ID [0-ABE0, 1-RANDOM10, 2-RANDOM20, 3-DE2, 4-DE8, 5-DE250]
         3 core Num, or the repeat times
     :return:
     """
@@ -143,7 +155,7 @@ def run():
     if len(sys.argv) > 1:
         modelIndex, methodologyId, repeatNum = int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3])
     else:  # for default local run
-        modelIndex, methodologyId, repeatNum = 0, 3, 1
+        modelIndex, methodologyId, repeatNum = 0, 5, 1
 
     if repeatNum == 1:
         time2 = time.time()

@@ -88,15 +88,15 @@ def de_estimate(NGEN, data):
             count += 1
         fits_old = fits_new
 
-        if count == LIFE:
+        if count == LIFE or g == max(NGEN) + 1:
             best = hof[0].tolist()
             best = [int(i) for i in best]
             RES.append(best)
-
-    if len(RES) == 1:
-        return RES[0]
-    else:
-        return RES
+    # if len(RES) == 1:
+    #     return RES[0]
+    # else:
+    #     return RES
+    return RES[0], g
 
 
 def random_strategy(randomTimes, data):
