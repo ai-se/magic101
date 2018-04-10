@@ -6,7 +6,7 @@
 #SBATCH -N 1   # total number of nodes
 #SBATCH -n 10   # total number of mpi cores
 #SBATCH -x c[79-98,101-107]  # avoid
-#SBATCH -t 7:00:00   # rum time (hhmmss)
+#SBATCH -t 11:00:00   # rum time (hhmmss)
 
 cd /home/txia4/magic101
 source addroot.sh
