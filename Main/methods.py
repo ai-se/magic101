@@ -43,7 +43,7 @@ def de_estimate(NGEN, data):
     # Differential evolution parameters
     CR = 0.5
     F = 1
-    MU = 3
+    MU = 25
     LIFE = 5
 
     toolbox = base.Toolbox()
@@ -62,11 +62,10 @@ def de_estimate(NGEN, data):
 
     RES = list()
     count = 0
-    g = 1
+    g = 0
     fits_old = [ind.fitness.values[0] for ind in pop]
 
-    while count < LIFE and g < max(NGEN) + 1:
-    # for g in range(1, max(NGEN) + 1):
+    while count < LIFE and g < max(NGEN):
         g += 1
         print("count:" + str(count) + " gen:" + str(g))
 
@@ -88,7 +87,7 @@ def de_estimate(NGEN, data):
             count += 1
         fits_old = fits_new
 
-        if count == LIFE or g == max(NGEN) + 1:
+        if count == LIFE or g == max(NGEN):
             best = hof[0].tolist()
             best = [int(i) for i in best]
             RES.append(best)
@@ -96,6 +95,82 @@ def de_estimate(NGEN, data):
     #     return RES[0]
     # else:
     #     return RES
+    return RES[0], g
+
+
+def ga_estimate(NGEN, data):
+
+    def evaluateFunc2(config):
+        return transform(config, data)
+
+    # Genetic algorithm parameters
+    CX = 0.6
+    MUT = 0.1
+    NP = 25
+    LIFE = 5
+
+    toolbox = base.Toolbox()
+    creator.create("FitnessMin2", base.Fitness, weights=[-1.0], )
+    creator.create("Individual2", array.array, typecode='d', fitness=creator.FitnessMin2)
+    toolbox.register("select2", tools.selTournament, tournsize=3)
+    toolbox.register("evaluate2", evaluateFunc2)
+    toolbox.register("mate", tools.cxTwoPoint)
+    toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
+
+    pop = [creator.Individual2(randlist()) for _ in range(NP)]
+    hof = tools.HallOfFame(1)
+    for ind in pop:
+        fitness = toolbox.evaluate2(ind)
+        ind.fitness.values = fitness
+    if type(NGEN) is not list:
+        NGEN = [NGEN]
+
+    RES = list()
+    count = 0
+    g = 0
+    fits_old = [ind.fitness.values[0] for ind in pop]
+
+    while count < LIFE and g < max(NGEN):
+        g += 1
+        print("count:" + str(count) + " gen:" + str(g))
+
+        offspring = toolbox.select2(pop, len(pop))
+        offspring = list(map(toolbox.clone, offspring))
+
+        for child1, child2 in zip(offspring[::2], offspring[1::2]):
+
+            if random.random() < CX:
+                toolbox.mate(child1, child2)
+
+                del child1.fitness.values
+                del child2.fitness.values
+
+        for mutant in offspring:
+
+            if random.random() < MUT:
+                toolbox.mutate(mutant)
+                del mutant.fitness.values
+
+        invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
+        fitnesses = map(toolbox.evaluate2, invalid_ind)
+        for ind, fit in zip(invalid_ind, fitnesses):
+            ind.fitness.values = fit
+
+        pop[:] = offspring
+
+        fits_new = [ind.fitness.values[0] for ind in pop]
+
+        hof.update(pop)
+
+        if median(fits_new) >= median(fits_old):
+            count += 1
+        fits_old = fits_new
+
+        if count == LIFE or g == max(NGEN):
+            best = hof[0].tolist()
+            best = [int(i) for i in best]
+            RES.append(best)
+
     return RES[0], g
 
 

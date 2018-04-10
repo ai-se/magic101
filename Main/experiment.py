@@ -26,7 +26,7 @@ import time
 import pdb
 from multiprocessing import Process
 from Main.methods import testing
-from Main.methods import de_estimate, random_strategy
+from Main.methods import de_estimate, ga_estimate, random_strategy
 from data.new_data import data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki, \
     data_china, data_isbsg10, data_kitchenham
 from utils.kfold import KFoldSplit_df
@@ -81,6 +81,12 @@ def DE250(TrainSet, TestSet):
     return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
 
+def GA250(TrainSet, TestSet):
+    best_config, ngen = ga_estimate(250, data=TrainSet)
+    mre, sa = calc_error(best_config, TestSet)
+    return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
+
+
 def ATLM():
     pass
 
@@ -118,9 +124,11 @@ def exec(modelIndex, methodologyId):
             res = DE8(train, test)
         elif methodologyId == 5:
             res = DE250(train, test)
+        elif methodologyId == 6:
+            res = GA250(train, test)
         time.sleep(random.random() * 2)  # avoid writing conflicts
 
-        if methodologyId != 5:
+        if methodologyId != 5 and methodologyId != 6:
             with open('final_list.txt', 'a+') as f:
                 # print("Finishing " + str(sys.argv))
                 f.write(
@@ -135,7 +143,13 @@ def exec(modelIndex, methodologyId):
         #         f.write(
         #             str(modelIndex) + ';' + '4' + ';' + str(res[1]["mre"]) + ';' + str(res[1]["sa"]) + ';' +
         #             str(res[1]["config"][1]) + '\n')
-        else:  # running DE250
+        if methodologyId == 5:  # running DE250
+            with open('final_list.txt', 'a+') as f:
+                # print("Finishing " + str(sys.argv))
+                f.write(
+                    str(modelIndex) + ';' + str(methodologyId) + ';' + str(res["mre"]) + ';' + str(res["sa"]) + ';' +
+                    str(res["config"]) + ';' + str(res["gen"]) + '\n')
+        if methodologyId == 6:  # running GA250
             with open('final_list.txt', 'a+') as f:
                 # print("Finishing " + str(sys.argv))
                 f.write(
@@ -146,7 +160,7 @@ def run():
     """
     system arguments:
         1 modelIndex [0-albrecht, 1-desharnais, 2-finnish, 3-kemerer, 4-maxwell, 5-miyazaki, 6-china, 7-isbsg10, 8-kitchenham]
-        2 methodology ID [0-ABE0, 1-RANDOM10, 2-RANDOM20, 3-DE2, 4-DE8, 5-DE250]
+        2 methodology ID [0-ABE0, 1-RANDOM10, 2-RANDOM20, 3-DE2, 4-DE8, 5-DE250, 6-GA250]
         3 core Num, or the repeat times
     :return:
     """
