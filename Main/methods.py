@@ -43,7 +43,7 @@ def de_estimate(NGEN, data):
     # Differential evolution parameters
     CR = 0.5
     F = 1
-    MU = 25
+    MU = 100
     LIFE = 5
 
     toolbox = base.Toolbox()
@@ -106,7 +106,7 @@ def ga_estimate(NGEN, data):
     # Genetic algorithm parameters
     CX = 0.6
     MUT = 0.1
-    NP = 25
+    NP = 100
     LIFE = 5
 
     toolbox = base.Toolbox()
