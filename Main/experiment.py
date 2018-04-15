@@ -75,8 +75,8 @@ def GA100(TrainSet, TestSet):
     return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
 
-def DE100(TrainSet, TestSet):
-    best_config, ngen = de_estimate(100, data=TrainSet)
+def DE10(TrainSet, TestSet):
+    best_config, ngen = de_estimate(10, data=TrainSet)
     mre, sa = calc_error(best_config, TestSet)
     return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
@@ -121,7 +121,7 @@ def exec(modelIndex, methodologyId):
         elif methodologyId == 6:
             res = GA100(train, test)
         elif methodologyId == 7:
-            res = DE100(train, test)
+            res = DE10(train, test)
         # elif methodologyId == 8:
         #     res = NSGA2(train, test)
         time.sleep(random.random() * 2)  # avoid writing conflicts
@@ -142,7 +142,7 @@ def run():
     """
     system arguments:
         1 modelIndex [0-albrecht, 1-desharnais, 2-finnish, 3-kemerer, 4-maxwell, 5-miyazaki, 6-china, 7-isbsg10, 8-kitchenham]
-        2 methodology ID [0-ABE0, 1-ATLM, 2-CART, 3-CoGEE, 4-MOEAD, 5-DE30, 6-GA100, 7-DE100, 8-NSGA2]
+        2 methodology ID [0-ABE0, 1-ATLM, 2-CART, 3-CoGEE, 4-MOEAD, 5-DE30, 6-GA100, 7-DE10, 8-NSGA2]
         3 core Num, or the repeat times
     :return:
     """
