@@ -29,10 +29,10 @@ def randlist(a=1, b=7, c=2, d=5, e=3, f=5):
     return k
 
 
-def de_estimate(NGEN, data):
+def de_estimate(MU, data):
     """
 
-    :param NGEN: list or int
+    :param MU: int
     :param data:
     :return: mre, sa, best configuration. IF NGEN IS A LIST, RETURN A LIST [[mre,sa, best confi][mre,sa,best config],...]
     """
@@ -43,7 +43,7 @@ def de_estimate(NGEN, data):
     # Differential evolution parameters
     CR = 0.5
     F = 1
-    MU = 50
+    NGEN = 250
     LIFE = 5
 
     toolbox = base.Toolbox()
@@ -73,16 +73,18 @@ def de_estimate(NGEN, data):
             a, b, c = toolbox.select(pop)
             y = toolbox.clone(agent)
             index = random.randrange(NDIM)
-            lis = [1, 7, 2, 5, 3, 5]
+            # lis = [1, 7, 2, 5, 3, 5]
             for i, value in enumerate(agent):
                 if i == index or random.random() < CR:
-                    y[i] = (a[i] + F * (b[i] - c[i])) % lis[i]
+                    # y[i] = (a[i] + F * (b[i] - c[i])) % lis[i]
+                    y[i] = random.choice([a[i], random.choice([b[i], c[i]])])
             y.fitness.values = toolbox.evaluate(y)
             if y.fitness > agent.fitness:
                 pop[k] = y
-        hof.update(pop)
 
+        hof.update(pop)
         fits_new = [ind.fitness.values[0] for ind in pop]
+
         if median(fits_new) >= median(fits_old):
             count += 1
         fits_old = fits_new
@@ -91,14 +93,11 @@ def de_estimate(NGEN, data):
             best = hof[0].tolist()
             best = [int(i) for i in best]
             RES.append(best)
-    # if len(RES) == 1:
-    #     return RES[0]
-    # else:
-    #     return RES
+
     return RES[0], g
 
 
-def ga_estimate(NGEN, data):
+def ga_estimate(NP, data):
 
     def evaluateFunc2(config):
         return transform(config, data)
@@ -106,7 +105,7 @@ def ga_estimate(NGEN, data):
     # Genetic algorithm parameters
     CX = 0.6
     MUT = 0.1
-    NP = 50
+    NGEN = 250
     LIFE = 5
 
     toolbox = base.Toolbox()
@@ -158,9 +157,8 @@ def ga_estimate(NGEN, data):
 
         pop[:] = offspring
 
-        fits_new = [ind.fitness.values[0] for ind in pop]
-
         hof.update(pop)
+        fits_new = [ind.fitness.values[0] for ind in pop]
 
         if median(fits_new) >= median(fits_old):
             count += 1
