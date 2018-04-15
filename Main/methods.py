@@ -172,6 +172,94 @@ def ga_estimate(NP, data):
     return RES[0], g
 
 
+def nsga2_estimate(NP, data):
+
+    def evaluateFunc3(config):
+        return transform(config, data)
+
+    NGEN = 250
+    CXPB = 0.9
+    LIFE = 5
+
+    toolbox = base.Toolbox()
+    creator.create("FitnessMin3", base.Fitness, weights=(-1.0, -1.0))
+    creator.create("Individual3", array.array, typecode='d', fitness=creator.FitnessMin3)
+
+    BOUND_LOW, BOUND_UP = 0.0, 1.0
+
+    toolbox.register("select3", tools.selNSGA2)
+    toolbox.register("evaluate3", evaluateFunc3)
+    # toolbox.register("mate2", tools.cxSimulatedBinaryBounded, low=BOUND_LOW, up=BOUND_UP, eta=20.0)
+    toolbox.register("mate2", tools.cxTwoPoint)
+    # toolbox.register("mutate2", tools.mutPolynomialBounded, low=BOUND_LOW, up=BOUND_UP, eta=20.0, indpb=0.05)
+    toolbox.register("mutate2", tools.mutFlipBit, indpb=0.05)
+
+    pop = [creator.Individual3(randlist()) for _ in range(NP)]
+
+    # Evaluate the individuals with an invalid fitness
+    invalid_ind = [ind for ind in pop if not ind.fitness.valid]
+    fitnesses = toolbox.map(toolbox.evaluate3, invalid_ind)
+    for ind, fit in zip(invalid_ind, fitnesses):
+        ind.fitness.values = fit
+
+    # This is just to assign the crowding distance to the individuals
+    # no actual selection is done
+    pop = toolbox.select3(pop, len(pop))
+    hof = tools.HallOfFame(1)
+
+    for ind in pop:
+        fitness = toolbox.evaluate3(ind)
+        ind.fitness.values = fitness
+    if type(NGEN) is not list:
+        NGEN = [NGEN]
+
+    RES = list()
+    count = 0
+    g = 0
+    fits_old = [ind.fitness.values[0] for ind in pop]
+
+    # Begin the generational process
+    while count < LIFE and g < max(NGEN):
+        # Vary the population
+        g += 1
+        print("count:" + str(count) + " gen:" + str(g))
+
+        offspring = tools.selTournamentDCD(pop, len(pop))
+        offspring = [toolbox.clone(ind) for ind in offspring]
+
+        for ind1, ind2 in zip(offspring[::2], offspring[1::2]):
+            if random.random() <= CXPB:
+                toolbox.mate2(ind1, ind2)
+
+            toolbox.mutate2(ind1)
+            toolbox.mutate2(ind2)
+            del ind1.fitness.values
+            del ind2.fitness.values
+
+        # Evaluate the individuals with an invalid fitness
+        invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
+        fitnesses = toolbox.map(toolbox.evaluate3, invalid_ind)
+        for ind, fit in zip(invalid_ind, fitnesses):
+            ind.fitness.values = fit
+
+        # Select the next generation population
+        pop = toolbox.select3(pop + offspring, NP)
+
+        hof.update(pop)
+        fits_new = [ind.fitness.values[0] for ind in pop]
+
+        if median(fits_new) >= median(fits_old):
+            count += 1
+        fits_old = fits_new
+
+        if count == LIFE or g == max(NGEN):
+            best = hof[0].tolist()
+            best = [int(i) for i in best]
+            RES.append(best)
+
+    return RES[0], g
+
+
 def random_strategy(randomTimes, data):
     """
     :param randomTimes:

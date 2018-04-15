@@ -26,7 +26,7 @@ import time
 import pdb
 from multiprocessing import Process
 from Main.methods import testing
-from Main.methods import de_estimate, ga_estimate, random_strategy
+from Main.methods import de_estimate, ga_estimate, random_strategy, nsga2_estimate
 from data.new_data import data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki, \
     data_china, data_isbsg10, data_kitchenham
 from utils.kfold import KFoldSplit_df
@@ -69,8 +69,8 @@ def DE30(TrainSet, TestSet):
     return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
 
-def GA30(TrainSet, TestSet):
-    best_config, ngen = ga_estimate(30, data=TrainSet)
+def GA100(TrainSet, TestSet):
+    best_config, ngen = ga_estimate(100, data=TrainSet)
     mre, sa = calc_error(best_config, TestSet)
     return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
@@ -119,24 +119,21 @@ def exec(modelIndex, methodologyId):
         elif methodologyId == 5:
             res = DE30(train, test)
         elif methodologyId == 6:
-            res = GA30(train, test)
+            res = GA100(train, test)
+        elif methodologyId == 7:
+            res = DE100(train, test)
+        # elif methodologyId == 8:
+        #     res = NSGA2(train, test)
         time.sleep(random.random() * 2)  # avoid writing conflicts
 
-        if methodologyId != 5 and methodologyId != 6:
+        if methodologyId == 0:
             with open('final_list.txt', 'a+') as f:
                 # print("Finishing " + str(sys.argv))
                 f.write(
                     str(modelIndex) + ';' + str(methodologyId) + ';' + str(res["mre"]) + ';' + str(res["sa"]) + ';' +
                     str(res["config"]) + '\n')
-        if methodologyId == 5:  # running DE3
+        else:
             with open('final_list.txt', 'a+') as f:
-                # print("Finishing " + str(sys.argv))
-                f.write(
-                    str(modelIndex) + ';' + str(methodologyId) + ';' + str(res["mre"]) + ';' + str(res["sa"]) + ';' +
-                    str(res["config"]) + ';' + str(res["gen"]) + '\n')
-        if methodologyId == 6:  # running GA3
-            with open('final_list.txt', 'a+') as f:
-                # print("Finishing " + str(sys.argv))
                 f.write(
                     str(modelIndex) + ';' + str(methodologyId) + ';' + str(res["mre"]) + ';' + str(res["sa"]) + ';' +
                     str(res["config"]) + ';' + str(res["gen"]) + '\n')
@@ -154,7 +151,7 @@ def run():
     if len(sys.argv) > 1:
         modelIndex, methodologyId, repeatNum = int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3])
     else:  # for default local run
-        modelIndex, methodologyId, repeatNum = 0, 0, 1
+        modelIndex, methodologyId, repeatNum = 0, 6, 1
 
     if repeatNum == 1:
         time2 = time.time()
