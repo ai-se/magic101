@@ -81,6 +81,12 @@ def DE10(TrainSet, TestSet):
     return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
 
+def NSGA2(TrainSet, TestSet):
+    best_config, ngen = nsga2_estimate(100, data=TrainSet)
+    mre, sa = calc_error(best_config, TestSet)
+    return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
+
+
 def ATLM():
     pass
 
@@ -122,8 +128,8 @@ def exec(modelIndex, methodologyId):
             res = GA100(train, test)
         elif methodologyId == 7:
             res = DE10(train, test)
-        # elif methodologyId == 8:
-        #     res = NSGA2(train, test)
+        elif methodologyId == 8:
+            res = NSGA2(train, test)
         time.sleep(random.random() * 2)  # avoid writing conflicts
 
         if methodologyId == 0:
