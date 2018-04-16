@@ -38,7 +38,7 @@ def most_common(lst):
 
 def counting(data_id):
     data = pd.read_csv('Outputs/final_list.txt', sep=";", header=None)
-    data.columns = ["Data_ID", "Method_ID", "MRE", "SA", "CONFIG"]
+    data.columns = ["Data_ID", "Method_ID", "MRE", "SA", "CONFIG", "NGEN"]
     new_data = data.query('Data_ID == ["' + str(data_id) +
                           '"] and Method_ID == ["' + str(4) +
                           '"]')
@@ -90,16 +90,21 @@ def counting(data_id):
 
 def latex_plot(model_name, data_id):
     def print_one_box(den):
-        return "\dbox{" + str(int(den * 90 + 10)) + "}"
+        den *= 100
+        if den == 100:
+            den = 99
+        if den >= 50:
+            return "\wbox{" + str(int(den)) + "}"
+        elif den < 10:
+            return "\dbox{0" + str(int(den)) + "}"
+        else:
+            return "\dbox{" + str(int(den)) + "}"
 
     density = counting(data_id)
     str1 = model_name + '&'
     for i, v in enumerate(density):
         # handing v here
-        if max(v) < 0.4:
-            M = max(v)
-            ratio = 0.7 / (sum(v) - M)
-            v = [0.7 if tv == M else tv * ratio for tv in v]
+        v = [float(i) / sum(v) for i in v]
         for j, vv in enumerate(v):
             str1 += print_one_box(vv)
         str1 += '&'
@@ -109,7 +114,8 @@ def latex_plot(model_name, data_id):
 
 
 def latex_plot_all_density():
-    model_names = ['albrecht', 'desharnais', 'finnish', 'kemerer', 'maxwell', 'miyazaki']
+    model_names = ['albrecht', 'desharnais', 'finnish', 'kemerer', 'maxwell', 'miyazaki', 'china', 'isbsg10',
+                   'kitchenham']
     for i, n in enumerate(model_names):
         latex_plot(n, i)
 

@@ -1,12 +1,13 @@
 import numpy as np
-
+import pdb
 from ABE.main import abe_execute
 from ABE.main import gen_setting_obj
 from utils.kfold import KFoldSplit_df
 
 
 def get_setting_obj(configurationIndex):
-    configurationIndex = configurationIndex.tolist()
+    if not type(configurationIndex) is list:
+        configurationIndex = configurationIndex.tolist()
     fm2S = [
         ['rm_noting', 'outlier', 'prototype'],
         ['remain_same', 'genetic_weighting', 'gain_rank', 'relief', 'principal_component', 'cfs', 'consistency_subset',
@@ -37,7 +38,7 @@ def get_setting_obj(configurationIndex):
 def mre_calc(y_predict, y_actual):
     mre = []
     for predict, actual in zip(y_predict, y_actual):
-        mre.append(abs(predict - actual) / (actual + 0.0001))
+        mre.append(abs(predict - actual) / (actual))
     MRE = np.median(mre)
     if MRE == 0:
         MRE = np.mean(mre)
@@ -54,16 +55,20 @@ def sa_calc(Y_predict, Y_actual):
     return sa_error
 
 
-def transform(configurationIndex, trainData, testData):
+def transform(configurationIndex, data):
     """
     Given trainDat, TestData and configuration indices, return the MRE of given test data set.
     :param configurationIndex:
-    :param trainData:
-    :param testData:
+    :param data:
     :return:
     """
-    Y_predict, Y_actual = abe_execute(S=get_setting_obj(configurationIndex), train=trainData, test=testData)
+    Y_predict, Y_actual = abe_execute(S=get_setting_obj(configurationIndex), data=data)
     return mre_calc(Y_predict, Y_actual),
+
+
+def calc_error(bestConfigIndex, testData):
+    Y_predict, Y_actual = abe_execute(S=get_setting_obj(bestConfigIndex), data=testData)
+    return mre_calc(Y_predict, Y_actual), sa_calc(Y_predict, Y_actual)
 
 
 if __name__ == '__main__':

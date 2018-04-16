@@ -45,7 +45,6 @@ def default(df):
 def do_nothing(df):
     return df
 
-
 def equal_frequency(df, groupSize=10):
     """
     by default, groupsize=10. i.e. discrete all into 10 groups. each group, value should be median of original values
@@ -54,6 +53,8 @@ def equal_frequency(df, groupSize=10):
     :return:
     """
     for c_i in range(df.shape[1] - 1):
+        if df.iloc[:, c_i].unique().shape[0] < groupSize:
+            continue
         maps = pd.qcut(df.iloc[:, c_i], groupSize, duplicates='drop')
         map_v = np.zeros([df.shape[0], 1])
         for r_i, m in enumerate(maps):
@@ -61,6 +62,7 @@ def equal_frequency(df, groupSize=10):
             y = m.right
             map_v[r_i] = (y + x) / 2
         df.iloc[:, c_i] = map_v
+
     return df
 
 
@@ -72,6 +74,8 @@ def equal_width(df, groupSize=10):
     :return:
     """
     for c_i in range(df.shape[1] - 1):
+        if df.iloc[:, c_i].unique().shape[0] < groupSize:
+            continue
         maps = pd.cut(df.iloc[:, c_i], groupSize)
         map_v = np.zeros([df.shape[0], 1])
         for r_i, m in enumerate(maps):

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Copyright (C) 2018, Jianfeng Chen <jchen37@ncsu.edu>
+# Copyright (C) 2018, Jianfeng Chen <jchen37@ncsu.edu>, Tianpei Xia <txia4@ncsu.edu>
 # vim: set ts=4 sts=4 sw=4 expandtab smartindent:
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,38 +23,65 @@
 import random
 import sys
 import time
+import pdb
 from multiprocessing import Process
-
-from Main.methods import de_estimate, random_strategy, abe0_strategy
-from data.new_data import data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki
+from Main.methods import testing
+from Main.methods import de_estimate, ga_estimate, random_strategy, nsga2_estimate
+from data.new_data import data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki, \
+    data_china, data_isbsg10, data_kitchenham
 from utils.kfold import KFoldSplit_df
+from Optimizer.feature_link import calc_error
 
 
 def DE2(TrainSet, TestSet):
-    return de_estimate(2, TrainSet, TestSet)
+    best_config, ngen = de_estimate(2, data=TrainSet)
+    mre, sa = calc_error(best_config, TestSet)
+    return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
 
 def DE8(TrainSet, TestSet):
-    return de_estimate(8, TrainSet, TestSet)
-
-
-def DE28(TrainSet, TestSet):
-    return de_estimate([2, 8], TrainSet, TestSet)
+    best_config, ngen = de_estimate(8, data=TrainSet)
+    mre, sa = calc_error(best_config, TestSet)
+    return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
 
 def RANDOM10(TrainSet, TestSet):
-    return random_strategy(10, TrainSet, TestSet)
+    best_config = random_strategy(10, data=TrainSet)[0]
+    mre, sa = calc_error(best_config, TestSet)
+    return {"mre": mre, "sa": sa, "config": best_config}
 
 
 def RANDOM20(TrainSet, TestSet):
-    return random_strategy(20, TrainSet, TestSet)
+    best_config = random_strategy(20, data=TrainSet)[0]
+    mre, sa = calc_error(best_config, TestSet)
+    return {"mre": mre, "sa": sa, "config": best_config}
 
 
 def ABE0(TrainSet, TestSet):
-    return abe0_strategy(TrainSet, TestSet)
+    best_config = [0, 0, 0, 0, 0, 0]
+    mre, sa = calc_error(best_config, TestSet)
+    return {"mre": mre, "sa": sa, "config": best_config}
 
 
-def WHIGHAM():
+def DE30(TrainSet, TestSet):
+    best_config, ngen = de_estimate(30, data=TrainSet)
+    mre, sa = calc_error(best_config, TestSet)
+    return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
+
+
+def GA100(TrainSet, TestSet):
+    best_config, ngen = ga_estimate(100, data=TrainSet)
+    mre, sa = calc_error(best_config, TestSet)
+    return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
+
+
+def DE10(TrainSet, TestSet):
+    best_config, ngen = de_estimate(10, data=TrainSet)
+    mre, sa = calc_error(best_config, TestSet)
+    return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
+
+
+def ATLM():
     pass
 
 
@@ -65,15 +92,18 @@ def exec(modelIndex, methodologyId):
     :return: writing to final_list.txt
         ^^^^ repeatID mre sa
     """
-    datafunc = [data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki]
+    datafunc = [data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki,
+                data_china, data_isbsg10, data_kitchenham]
     model = datafunc[modelIndex]
     res = None
 
-    num_pj = len(model())
-    if num_pj < 40:
-        fold_num = 3
-    else:
-        fold_num = 10
+    # num_pj = len(model())
+    # if num_pj < 40:
+    #     fold_num = 3
+    # else:
+    #     fold_num = 10
+
+    fold_num = 3
 
     for train, test in KFoldSplit_df(model(), fold_num):
         if methodologyId == 0:
@@ -87,43 +117,46 @@ def exec(modelIndex, methodologyId):
         elif methodologyId == 4:
             res = DE8(train, test)
         elif methodologyId == 5:
-            res = DE28(train, test)
+            res = DE30(train, test)
+        elif methodologyId == 6:
+            res = GA100(train, test)
+        elif methodologyId == 7:
+            res = DE10(train, test)
+        # elif methodologyId == 8:
+        #     res = NSGA2(train, test)
         time.sleep(random.random() * 2)  # avoid writing conflicts
 
-        if methodologyId != 5:
+        if methodologyId == 0:
             with open('final_list.txt', 'a+') as f:
-                print("Finishing " + str(sys.argv))
+                # print("Finishing " + str(sys.argv))
                 f.write(
-                    str(modelIndex) + ';' + str(methodologyId) + ';' + str(res[0]) + ';' + str(res[1]) + ';' +
-                    str(list(map(int, res[2].tolist()))) + '\n')
-        else:  # running DE2/8
+                    str(modelIndex) + ';' + str(methodologyId) + ';' + str(res["mre"]) + ';' + str(res["sa"]) + ';' +
+                    str(res["config"]) + '\n')
+        else:
             with open('final_list.txt', 'a+') as f:
-                print("Finishing " + str(sys.argv))
                 f.write(
-                    str(modelIndex) + ';' + '3' + ';' + str(res[0][0]) + ';' + str(res[0][1]) + ';' +
-                    str(list(map(int, res[0][2].tolist()))) + '\n')
-                f.write(
-                    str(modelIndex) + ';' + '4' + ';' + str(res[1][0]) + ';' + str(res[1][1]) + ';' +
-                    str(list(map(int, res[1][2].tolist()))) + '\n'
-                )
-
+                    str(modelIndex) + ';' + str(methodologyId) + ';' + str(res["mre"]) + ';' + str(res["sa"]) + ';' +
+                    str(res["config"]) + ';' + str(res["gen"]) + '\n')
 
 def run():
     """
     system arguments:
-        1 modelIndex,
-        2 methodology ID [0-ABE0, 1-RANDOM10, 2-RANDOM20, 3-DE2, 4-DE8, 5-DE2/8]
+        1 modelIndex [0-albrecht, 1-desharnais, 2-finnish, 3-kemerer, 4-maxwell, 5-miyazaki, 6-china, 7-isbsg10, 8-kitchenham]
+        2 methodology ID [0-ABE0, 1-ATLM, 2-CART, 3-CoGEE, 4-MOEAD, 5-DE30, 6-GA100, 7-DE10, 8-NSGA2]
         3 core Num, or the repeat times
     :return:
     """
+    start_time = time.time()
 
     if len(sys.argv) > 1:
         modelIndex, methodologyId, repeatNum = int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3])
     else:  # for default local run
-        modelIndex, methodologyId, repeatNum = 0, 3, 1
+        modelIndex, methodologyId, repeatNum = 0, 6, 1
 
     if repeatNum == 1:
+        time2 = time.time()
         exec(modelIndex, methodologyId)
+        print("total time = " + str(time.time() - time2))
         sys.exit(0)
 
     time1 = time.time()
@@ -136,7 +169,22 @@ def run():
         p[i].join()
     print("total time = " + str(time.time() - time1))
 
+    print("--- %s seconds ---" % (time.time() - start_time))
+
+
+def run_testing():
+    """
+    Debugging for a specific dataset under specified configuration indices.
+    repeat 100 times for 3 folds
+    :return:
+    """
+    for _ in range(100):
+        for train, test in KFoldSplit_df(data_isbsg10(), 3):
+            mre, sa, p = (testing(train, test, [1, 3, 2, 0, 0, 3]))
+            print(mre)
+            print(sa)
+
 
 if __name__ == '__main__':
-    # exec(0, 3)
     run()
+    # run_testing()
