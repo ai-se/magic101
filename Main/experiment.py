@@ -35,55 +35,55 @@ from Optimizer.feature_link import calc_error
 
 def DE2(TrainSet, TestSet):
     best_config, ngen = de_estimate(2, data=TrainSet)
-    mre, sa = calc_error(best_config, TestSet)
+    mre, sa, ci = calc_error(best_config, TestSet)
     return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
 
 def DE8(TrainSet, TestSet):
     best_config, ngen = de_estimate(8, data=TrainSet)
-    mre, sa = calc_error(best_config, TestSet)
+    mre, sa, ci = calc_error(best_config, TestSet)
     return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
 
 def RANDOM10(TrainSet, TestSet):
     best_config = random_strategy(10, data=TrainSet)[0]
-    mre, sa = calc_error(best_config, TestSet)
+    mre, sa, ci = calc_error(best_config, TestSet)
     return {"mre": mre, "sa": sa, "config": best_config}
 
 
 def RANDOM20(TrainSet, TestSet):
     best_config = random_strategy(20, data=TrainSet)[0]
-    mre, sa = calc_error(best_config, TestSet)
+    mre, sa, ci = calc_error(best_config, TestSet)
     return {"mre": mre, "sa": sa, "config": best_config}
 
 
 def ABE0(TrainSet, TestSet):
     best_config = [0, 0, 0, 0, 0, 0]
-    mre, sa = calc_error(best_config, TestSet)
+    mre, sa, ci = calc_error(best_config, TestSet)
     return {"mre": mre, "sa": sa, "config": best_config}
 
 
 def DE30(TrainSet, TestSet):
     best_config, ngen = de_estimate(30, data=TrainSet)
-    mre, sa = calc_error(best_config, TestSet)
+    mre, sa, ci = calc_error(best_config, TestSet)
     return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
 
 def GA100(TrainSet, TestSet):
     best_config, ngen = ga_estimate(100, data=TrainSet)
-    mre, sa = calc_error(best_config, TestSet)
+    mre, sa, ci = calc_error(best_config, TestSet)
     return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
 
 def DE10(TrainSet, TestSet):
     best_config, ngen = de_estimate(10, data=TrainSet)
-    mre, sa = calc_error(best_config, TestSet)
+    mre, sa, ci = calc_error(best_config, TestSet)
     return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
 
 def NSGA2(TrainSet, TestSet):
     best_config, ngen = nsga2_estimate(100, data=TrainSet)
-    mre, sa = calc_error(best_config, TestSet)
+    mre, sa, ci = calc_error(best_config, TestSet)
     return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
 

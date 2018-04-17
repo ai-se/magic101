@@ -25,7 +25,7 @@
 import pandas as pd
 
 method_names = ['ABE0', 'RANDOM40', 'RANDOM160', 'DE2', 'DE8', 'DE250', 'GA250']
-
+method_names = ['ABE0', 'ATLM', 'CART', 'CoGEE', 'MOEAD', 'DE30', 'GA100', 'DE10', 'NSGA2']
 
 def reading(model_index, model_name):
     """
@@ -42,23 +42,23 @@ def reading(model_index, model_name):
     data = pd.read_csv('Outputs/final_list.txt', sep=";", header=None)
     data.columns = ["Data_ID", "Method_ID", "MRE", "SA", "CONFIG", "NGEN"]
 
-    whigham = pd.read_csv('Outputs/ATLM.txt', sep=";", header=None)
-    whigham.columns = ["Data", "Method", "MRE", "SA"]
-    df15 = whigham.query('Data == ["' + model_name + '"] and Method == ["ATLM"]')
+    # whigham = pd.read_csv('Outputs/ATLM.txt', sep=";", header=None)
+    # whigham.columns = ["Data", "Method", "MRE", "SA"]
+    # df15 = whigham.query('Data == ["' + model_name + '"] and Method == ["ATLM"]')
 
-    df15_MRE = ' '.join([str(i) for i in sorted(df15.loc[:, "MRE"])])
-    df15_SA = ' '.join([str(i) for i in sorted(df15.loc[:, "SA"])])
+    # df15_MRE = ' '.join([str(i) for i in sorted(df15.loc[:, "MRE"])])
+    # df15_SA = ' '.join([str(i) for i in sorted(df15.loc[:, "SA"])])
 
     mre_file_name = model_name + '_mre.txt'
     sa_file_name = model_name + '_sa.txt'
 
-    with open(mre_file_name, 'a+') as f:
-        f.write('ATLM' + '\n' + df15_MRE)
+    # with open(mre_file_name, 'a+') as f:
+    #     f.write('ATLM' + '\n' + df15_MRE)
+    #
+    # with open(sa_file_name, 'a+') as f:
+    #     f.write('ATLM' + '\n' + df15_SA)
 
-    with open(sa_file_name, 'a+') as f:
-        f.write('ATLM' + '\n' + df15_SA)
-
-    for methodid in range(5, 7):
+    for methodid in [0, 1, 2, 3, 5, 6, 7]:
         df = data.query('Data_ID == ["' + model_index + '"] and Method_ID == ["' + str(methodid) + '"]')
         mre_str = ' '.join([str(i) for i in sorted(df.loc[:, "MRE"])])
         sa_str = ' '.join([str(i) for i in sorted(df.loc[:, "SA"])])

@@ -189,8 +189,10 @@ def nsga2_estimate(NP, data):
 
     toolbox.register("select3", tools.selNSGA2)
     toolbox.register("evaluate3", evaluateFunc3)
-    toolbox.register("mate2", tools.cxSimulatedBinaryBounded, low=BOUND_LOW, up=BOUND_UP, eta=20.0)
-    toolbox.register("mutate2", tools.mutPolynomialBounded, low=BOUND_LOW, up=BOUND_UP, eta=20.0, indpb=0.05)
+    # toolbox.register("mate2", tools.cxSimulatedBinaryBounded, low=BOUND_LOW, up=BOUND_UP, eta=20.0)
+    # toolbox.register("mutate2", tools.mutPolynomialBounded, low=BOUND_LOW, up=BOUND_UP, eta=20.0, indpb=0.05)
+    toolbox.register("mate2", tools.cxTwoPoint)
+    toolbox.register("mutate2", tools.mutFlipBit, indpb=0.05)
 
     pop = [creator.Individual3(randlist()) for _ in range(NP)]
 
