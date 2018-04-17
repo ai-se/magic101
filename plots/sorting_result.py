@@ -59,46 +59,50 @@ df16 = data.query('Data_ID == ["'+str(data_index)+'"] and Method_ID == ["6"]')
 df16_MRE = sorted(df16.loc[:,"MRE"])
 df16_SA = sorted(df16.loc[:,"SA"])
 
-font = {
-        # 'weight' : 'bold',
-        'size'   : 14}
+# print(len(data.query('Data_ID == ["6"] and Method_ID == ["6"]')))
+# print(data.query('Data_ID == ["6"] and Method_ID == ["8"]'))
+print(len(data.query('Data_ID == ["8"]')))
 
-matplotlib.rc('font', **font)
-
-
-plt.figure(1)
-plt.subplot(1, 2, 1)
-plt.title('Smaller is better', fontsize=22)
-# plt.plot(df10_MRE)
-# plt.plot(df11_MRE)
-# plt.plot(df12_MRE)
-# plt.plot(df13_MRE)
-# plt.plot(df14_MRE)
-# plt.plot(df25_MRE)
-plt.plot(df15_MRE)
-plt.plot(df16_MRE)
-plt.yscale('linear')           # linear, log, symlog, logit
-plt.ylabel('MRE', fontsize=22)
-plt.ylim(-0.1, 1.25)
-# plt.yticks([0,0.25,0.5,0.75,1])
-plt.legend(['DE250', 'GA250'], loc='lower right', fontsize = 'small')
-# plt.xlabel('Dataset: desharnais', fontsize=30)
+# font = {
+#         # 'weight' : 'bold',
+#         'size'   : 14}
+#
+# matplotlib.rc('font', **font)
+#
+#
+# plt.figure(1)
+# plt.subplot(1, 2, 1)
+# plt.title('Smaller is better', fontsize=22)
+# # plt.plot(df10_MRE)
+# # plt.plot(df11_MRE)
+# # plt.plot(df12_MRE)
+# # plt.plot(df13_MRE)
+# # plt.plot(df14_MRE)
+# # plt.plot(df25_MRE)
+# plt.plot(df15_MRE)
+# plt.plot(df16_MRE)
+# plt.yscale('linear')           # linear, log, symlog, logit
+# plt.ylabel('MRE', fontsize=22)
+# plt.ylim(-0.1, 1.25)
+# # plt.yticks([0,0.25,0.5,0.75,1])
+# plt.legend(['DE250', 'GA250'], loc='lower right', fontsize = 'small')
+# # plt.xlabel('Dataset: desharnais', fontsize=30)
+# # plt.show()
+#
+# plt.subplot(1, 2, 2)
+# plt.title('Larger is better', fontsize=22)
+# # plt.plot(df10_SA)
+# # plt.plot(df11_SA)
+# # plt.plot(df12_SA)
+# # plt.plot(df13_SA)
+# # plt.plot(df14_SA)
+# # plt.plot(df25_SA)
+# plt.plot(df15_SA)
+# plt.plot(df16_SA)
+# plt.yscale('linear')           # linear, log, symlog, logit
+# plt.ylabel('SA', fontsize=22)
+# plt.ylim(-0.1, 1.25)
+# # plt.yticks([0,0.25,0.5,0.75,1])
+# plt.legend(['DE250', 'GA250'], loc='upper left', fontsize = 'small')
+# # plt.xlabel('Dataset: desharnais', fontsize=30)
 # plt.show()
-
-plt.subplot(1, 2, 2)
-plt.title('Larger is better', fontsize=22)
-# plt.plot(df10_SA)
-# plt.plot(df11_SA)
-# plt.plot(df12_SA)
-# plt.plot(df13_SA)
-# plt.plot(df14_SA)
-# plt.plot(df25_SA)
-plt.plot(df15_SA)
-plt.plot(df16_SA)
-plt.yscale('linear')           # linear, log, symlog, logit
-plt.ylabel('SA', fontsize=22)
-plt.ylim(-0.1, 1.25)
-# plt.yticks([0,0.25,0.5,0.75,1])
-plt.legend(['DE250', 'GA250'], loc='upper left', fontsize = 'small')
-# plt.xlabel('Dataset: desharnais', fontsize=30)
-plt.show()
