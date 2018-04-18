@@ -14,7 +14,7 @@ def reading(model_index, model_name):
     mre_file_name = model_name + '_mre.txt'
     sa_file_name = model_name + '_sa.txt'
 
-    for methodid in [0, 5, 6, 7]:
+    for methodid in [0, 1, 2, 3, 5, 6, 7, 8]:
         df = data.query('Data_ID == ["' + model_index + '"] and Method_ID == ["' + str(methodid) + '"]')
         mre_str = ' '.join([str(i) for i in sorted(df.loc[:, "MRE"])])
         sa_str = ' '.join([str(i) for i in sorted(df.loc[:, "SA"])])
