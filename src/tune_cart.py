@@ -1,6 +1,12 @@
+import os
+import sys
+
+root = os.path.join(os.getcwd().split("src")[0], "src")
+if root not in sys.path:
+    sys.path.append(root)
+
 import random
 import numpy
-import sys
 
 from moead import MOEAD
 
@@ -12,6 +18,10 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.model_selection import train_test_split
 
 import numpy as np
+from datasets.handler import Handler
+
+from pdb import set_trace
+from utils import Misc
 
 
 class Learner:
@@ -26,28 +36,30 @@ class Learner:
     def eval_learner(self, individual):
         """Provide MRE and CI scores as the two objectives"""
         clf = self.learner(
-            max_depth=individual[0],
-            max_features=individual[1],
-            min_samples_leaf=individual[2],
-            min_samples_split=individual[3],
-            min_impurity_decrease=individual[4],
-            min_weight_fraction_leaf=individual[5]
-        )
-
+                max_depth=individual[0],
+                max_features=individual[1],
+                min_samples_leaf=individual[2],
+                min_samples_split=individual[3],
+                min_impurity_decrease=individual[4],
+                min_weight_fraction_leaf=individual[5]
+            )
         X = self.data[self.data.columns[:-1]]
         y = self.data[self.data.columns[-1]]
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33)
         clf.fit(X_train, y_train)
         y_pred = clf.predict(X_test)
-        mre = [(y_p - y_a) / y_a for y_p, y_a in zip(y_pred, y_test)]
-        return np.mean(mre)
+        # score = clf.predict(X_test, y_test)
+        mre = [abs(y_p - y_a) / y_a for y_p, y_a in zip(y_pred, y_test)]
+        return np.mean(mre), np.var(mre)
 
     def mutate(self, individual):
         """Perform mutation"""
         for i, item in enumerate(individual):
             if random.random() > 0.5:
-                if i == 1:
+                if i == 0:
                     individual[i] = random.randint(1, 7)
+                elif i in [2, 5]:
+                    individual[i] = random.uniform(0, 0.5)
                 else:
                     individual[i] = random.random()
 
@@ -69,7 +81,7 @@ class Tuner:
         """
 
         "Define a fitness evaluator"
-        creator.create("Fitness", base.Fitness, weights=(-1.0,))
+        creator.create("Fitness", base.Fitness, weights=(-1.0, -1.0))
 
         "Define an individual"
         creator.create("Individual", list, fitness=creator.Fitness)
@@ -78,6 +90,7 @@ class Tuner:
 
     def _setup_toolbox(self):
         INT_MIN, INT_MAX = 1, 7
+        FLT_MIN, FLT_MAX = 0, 0.5
         N_CYCLES = 1
 
         toolbox = base.Toolbox()
@@ -97,10 +110,10 @@ class Tuner:
         """
         toolbox.register("attr_max_depth", random.randint, INT_MIN, INT_MAX)
         toolbox.register("attr_max_features", random.random)
-        toolbox.register("attr_min_samples_leaf", random.random)
+        toolbox.register("attr_min_samples_leaf", random.uniform, FLT_MIN, FLT_MAX)
         toolbox.register("attr_min_samples_split", random.random)
         toolbox.register("attr_min_impurity_decrease", random.random)
-        toolbox.register("attr_min_weight_fraction_leaf", random.random)
+        toolbox.register("attr_min_weight_fraction_leaf", random.uniform, FLT_MIN, FLT_MAX)
         toolbox.register("individual", tools.initCycle, self.creator.Individual,
                          (toolbox.attr_max_depth,
                           toolbox.attr_max_features,
@@ -120,7 +133,6 @@ class Tuner:
         return toolbox
 
     def tune(self):
-
         NGEN = 50
         MU = 50
         LAMBDA = 2
@@ -139,7 +151,7 @@ class Tuner:
         stats.register("max", numpy.max, axis=0)
 
         ea = MOEAD(pop, self.toolbox, MU, CXPB, MUTPB, ngen=NGEN,
-                   stats=stats, halloffame=hof, nr=LAMBDA)
+                   stats=stats, halloffame=hof, nr=LAMBDA, verbose=False)
 
         pop = ea.execute()
 
@@ -147,4 +159,35 @@ class Tuner:
 
 
 if __name__ == "__main__":
-    pass
+    datasets = Handler.get_data()
+    for data_name, data in datasets.iteritems():
+        train, test = Misc.train_test_split(data)
+
+        tuner = Tuner(data=train)
+        try: pop, _, __ = tuner.tune()
+        except: continue
+
+        mmre = []
+        for individual in pop:
+            clf = DecisionTreeRegressor(
+                max_depth=individual[0],
+                max_features=individual[1],
+                min_samples_leaf=individual[2],
+                min_samples_split=individual[3],
+                min_impurity_decrease=individual[4],
+                min_weight_fraction_leaf=individual[5]
+            )
+            X_train = train[train.columns[:-1]]
+            y_train = train[train.columns[-1]]
+            X_test = test[test.columns[:-1]]
+            y_test = test[test.columns[-1]]
+
+            clf.fit(X_train, y_train)
+            y_pred = clf.predict(X_test)
+
+            mre = np.mean([abs(y_p - y_a) / y_a for y_p, y_a in zip(y_pred, y_test)])
+            mmre.append(int(mre*100))
+
+        print data_name, np.min(mmre)
+    set_trace()
+
