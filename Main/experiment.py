@@ -103,11 +103,11 @@ def exec(modelIndex, methodologyId):
     model = datafunc[modelIndex]
     res = None
 
-    # num_pj = len(model())
-    # if num_pj < 40:
-    #     fold_num = 3
-    # else:
-    #     fold_num = 10
+    num_pj = len(model())
+    if num_pj < 40:
+        fold_num = 3
+    else:
+        fold_num = 10
 
     fold_num = 3
 
