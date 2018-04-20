@@ -51,8 +51,8 @@ def RANDOM10(TrainSet, TestSet):
     return {"mre": mre, "sa": sa, "config": best_config}
 
 
-def RANDOM20(TrainSet, TestSet):
-    best_config = random_strategy(20, data=TrainSet)[0]
+def RANDOM30(TrainSet, TestSet):
+    best_config = random_strategy(30, data=TrainSet)[0]
     mre, sa, ci = calc_error(best_config, TestSet)
     return {"mre": mre, "sa": sa, "config": best_config}
 
@@ -109,15 +109,13 @@ def exec(modelIndex, methodologyId):
     else:
         fold_num = 10
 
-    fold_num = 3
-
     for train, test in KFoldSplit_df(model(), fold_num):
         if methodologyId == 0:
             res = ABE0(train, test)
         elif methodologyId == 1:
             res = RANDOM10(train, test)
         elif methodologyId == 2:
-            res = RANDOM20(train, test)
+            res = RANDOM30(train, test)
         elif methodologyId == 3:
             res = DE2(train, test)
         elif methodologyId == 4:
