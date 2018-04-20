@@ -7,6 +7,7 @@ if root not in sys.path:
 
 import random
 import numpy
+import scipy
 
 from moead import MOEAD
 
@@ -17,7 +18,6 @@ from deap import tools
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.model_selection import train_test_split
 
-import numpy as np
 from datasets.handler import Handler
 
 from pdb import set_trace
@@ -34,7 +34,9 @@ class Learner:
         self.learner = learner
 
     def eval_learner(self, individual):
-        """Provide MRE and CI scores as the two objectives"""
+        " ----------------------------------------------- "
+        " Provide MRE and CI scores as the two objectives "
+        " ----------------------------------------------- "
         clf = self.learner(
                 max_depth=individual[0],
                 max_features=individual[1],
@@ -45,20 +47,31 @@ class Learner:
             )
         X = self.data[self.data.columns[:-1]]
         y = self.data[self.data.columns[-1]]
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5)
         clf.fit(X_train, y_train)
         y_pred = clf.predict(X_test)
-        # score = clf.predict(X_test, y_test)
+        
+        "---- Compute the magnitude of relative error ----"
         mre = [abs(y_p - y_a) / y_a for y_p, y_a in zip(y_pred, y_test)]
-        return np.mean(mre), np.var(mre)
+        
+        "---- Compute MMRE and confidence interval ----"
+        mmre = numpy.mean(mre)
+        vmre = numpy.std(mre)
+        conf_int = scipy.stats.norm.interval(0.95, loc=mmre, scale=vmre)
+        conf_int = numpy.abs(numpy.subtract(*conf_int))
+        return mmre, conf_int
 
     def mutate(self, individual):
-        """Perform mutation"""
+        " ---------------- "
+        " Perform mutation "
+        " ---------------- "
         for i, item in enumerate(individual):
             if random.random() > 0.5:
                 if i == 0:
+                    "---- The first parameter is an integer ----"
                     individual[i] = random.randint(1, 7)
                 elif i in [2, 5]:
+                    "---- The 3rd and the 6th parameters have smaller range ---"
                     individual[i] = random.uniform(0, 0.5)
                 else:
                     individual[i] = random.random()
@@ -80,10 +93,10 @@ class Tuner:
         :rtype: creator
         """
 
-        "Define a fitness evaluator"
+        "---- Define a fitness evaluator ----"
         creator.create("Fitness", base.Fitness, weights=(-1.0, -1.0))
 
-        "Define an individual"
+        "---- Define an individual -----"
         creator.create("Individual", list, fitness=creator.Fitness)
 
         return creator
@@ -133,7 +146,7 @@ class Tuner:
         return toolbox
 
     def tune(self):
-        NGEN = 50
+        NGEN = 100
         MU = 50
         LAMBDA = 2
         CXPB = 0.7
@@ -161,33 +174,37 @@ class Tuner:
 if __name__ == "__main__":
     datasets = Handler.get_data()
     for data_name, data in datasets.iteritems():
-        train, test = Misc.train_test_split(data)
+        results = []
+        for _ in xrange(4):
+            train, test = Misc.train_test_split(data)
 
-        tuner = Tuner(data=train)
-        try: pop, _, __ = tuner.tune()
-        except: continue
+            tuner = Tuner(data=train)
+            try: pop, _, __ = tuner.tune()
+            except: continue
 
-        mmre = []
-        for individual in pop:
-            clf = DecisionTreeRegressor(
-                max_depth=individual[0],
-                max_features=individual[1],
-                min_samples_leaf=individual[2],
-                min_samples_split=individual[3],
-                min_impurity_decrease=individual[4],
-                min_weight_fraction_leaf=individual[5]
-            )
-            X_train = train[train.columns[:-1]]
-            y_train = train[train.columns[-1]]
-            X_test = test[test.columns[:-1]]
-            y_test = test[test.columns[-1]]
+            mmre = []
+            for individual in pop:
+                clf = DecisionTreeRegressor(
+                    max_depth=individual[0],
+                    max_features=individual[1],
+                    min_samples_leaf=individual[2],
+                    min_samples_split=individual[3],
+                    min_impurity_decrease=individual[4],
+                    min_weight_fraction_leaf=individual[5]
+                )
 
-            clf.fit(X_train, y_train)
-            y_pred = clf.predict(X_test)
+                X_train = train[train.columns[:-1]]
+                y_train = train[train.columns[-1]]
+                X_test = test[test.columns[:-1]]
+                y_test = test[test.columns[-1]]
 
-            mre = np.mean([abs(y_p - y_a) / y_a for y_p, y_a in zip(y_pred, y_test)])
-            mmre.append(int(mre*100))
+                clf.fit(X_train, y_train)
+                y_pred = clf.predict(X_test)
 
-        print data_name, np.min(mmre)
+                mre = numpy.mean([abs(y_p - y_a) / y_a for y_p, y_a in zip(y_pred, y_test)])
+                mmre.append(int(mre*100))
+
+            results.append(numpy.min(mmre))
+        print data_name, numpy.median(results), numpy.std(results)
     set_trace()
 
