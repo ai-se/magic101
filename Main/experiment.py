@@ -23,14 +23,14 @@
 import random
 import sys
 import time
-import pdb
 from multiprocessing import Process
-from Main.methods import testing
+
 from Main.methods import de_estimate, ga_estimate, random_strategy, nsga2_estimate
+from Main.methods import testing
+from Optimizer.feature_link import calc_error
 from data.new_data import data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki, \
     data_china, data_isbsg10, data_kitchenham
 from utils.kfold import KFoldSplit_df
-from Optimizer.feature_link import calc_error
 
 
 def DE2(TrainSet, TestSet):
@@ -82,7 +82,7 @@ def DE10(TrainSet, TestSet):
 
 
 def NSGA2(TrainSet, TestSet):
-    best_config, ngen = nsga2_estimate(100, 250, data=TrainSet)
+    best_config, ngen = nsga2_estimate(NP=8, NGEN=250, data=TrainSet)
     mre, sa, ci = calc_error(best_config, TestSet)
     return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
@@ -142,6 +142,7 @@ def exec(modelIndex, methodologyId):
                     str(modelIndex) + ';' + str(methodologyId) + ';' + str(res["mre"]) + ';' + str(res["sa"]) + ';' +
                     str(res["config"]) + ';' + str(res["gen"]) + '\n')
 
+
 def run():
     """
     system arguments:
@@ -155,7 +156,7 @@ def run():
     if len(sys.argv) > 1:
         modelIndex, methodologyId, repeatNum = int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3])
     else:  # for default local run
-        modelIndex, methodologyId, repeatNum = 2, 11, 1
+        modelIndex, methodologyId, repeatNum = 2, 8, 1
 
     if repeatNum == 1:
         time2 = time.time()

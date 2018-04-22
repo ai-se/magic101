@@ -2,8 +2,8 @@ import array
 import random
 import sys
 import warnings
-import pdb
 
+import numpy as np
 from deap import base
 from deap import creator
 from deap import tools
@@ -14,7 +14,7 @@ from ABE.main import abe_execute
 if not sys.warnoptions:
     warnings.simplefilter("ignore")
 
-from Optimizer.feature_link import transform, get_setting_obj, mre_calc, sa_calc
+from Optimizer.feature_link import transform, get_setting_obj, mre_calc, sa_calc, transform2
 
 NDIM = 6
 
@@ -97,7 +97,6 @@ def de_estimate(MU, NGEN, data):
 
 
 def ga_estimate(NP, NGEN, data):
-
     def evaluateFunc2(config):
         return transform(config, data)
 
@@ -171,10 +170,6 @@ def ga_estimate(NP, NGEN, data):
 
 
 def nsga2_estimate(NP, NGEN, data):
-
-    def evaluateFunc3(config):
-        return transform(config, data)
-
     CXPB = 0.9
     LIFE = 5
 
@@ -182,31 +177,43 @@ def nsga2_estimate(NP, NGEN, data):
     creator.create("FitnessMin3", base.Fitness, weights=(-1.0, -1.0))
     creator.create("Individual3", array.array, typecode='d', fitness=creator.FitnessMin3)
 
-    BOUND_LOW, BOUND_UP = 0.0, 1.0
-
     toolbox.register("select3", tools.selNSGA2)
-    toolbox.register("evaluate3", evaluateFunc3)
-    # toolbox.register("mate2", tools.cxSimulatedBinaryBounded, low=BOUND_LOW, up=BOUND_UP, eta=20.0)
-    # toolbox.register("mutate2", tools.mutPolynomialBounded, low=BOUND_LOW, up=BOUND_UP, eta=20.0, indpb=0.05)
     toolbox.register("mate2", tools.cxTwoPoint)
-    toolbox.register("mutate2", tools.mutFlipBit, indpb=0.05)
+
+    def mutInBound(individual, lower, upper, indpb):
+        """ mutation by bit. gurantee to return the integer within [lower_i, upper_i]
+
+        :param individual: Individual to be mutated.
+        :param lower: a list defining the lower bound of each dimension in decision space
+        :param upper: upper list, see lower
+        :param indpb: mutation rate (by bit)
+        :returns: A tuple of one individual.
+
+        This function uses the :func:`~random.random` function from the python base
+        :mod:`random` module.
+        """
+        for i in range(len(individual)):
+            if random.random() < indpb:
+                individual[i] = random.randint(lower[i], upper[i])
+
+        return individual,
+
+    toolbox.register("mutate2", mutInBound, lower=[0] * 6, upper=[1, 7, 2, 5, 3, 5], indpb=0.1)
 
     pop = [creator.Individual3(randlist()) for _ in range(NP)]
 
     # Evaluate the individuals with an invalid fitness
     invalid_ind = [ind for ind in pop if not ind.fitness.valid]
-    fitnesses = toolbox.map(toolbox.evaluate3, invalid_ind)
-    for ind, fit in zip(invalid_ind, fitnesses):
-        ind.fitness.values = fit
+    for ind in invalid_ind:
+        ind.fitness.values = transform2(ind, data)
 
     # This is just to assign the crowding distance to the individuals
     # no actual selection is done
     pop = toolbox.select3(pop, len(pop))
-    hof = tools.HallOfFame(1)
 
     for ind in pop:
-        fitness = toolbox.evaluate3(ind)
-        ind.fitness.values = fitness
+        ind.fitness.values = transform2(ind, data)
+
     if type(NGEN) is not list:
         NGEN = [NGEN]
 
@@ -235,14 +242,12 @@ def nsga2_estimate(NP, NGEN, data):
 
         # Evaluate the individuals with an invalid fitness
         invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
-        fitnesses = toolbox.map(toolbox.evaluate3, invalid_ind)
-        for ind, fit in zip(invalid_ind, fitnesses):
-            ind.fitness.values = fit
+        for ind in invalid_ind:
+            ind.fitness.values = transform2(ind, data)
 
         # Select the next generation population
         pop = toolbox.select3(pop + offspring, NP)
 
-        hof.update(pop)
         fits_new = [ind.fitness.values[0] for ind in pop]
 
         if median(fits_new) >= median(fits_old):
@@ -250,8 +255,9 @@ def nsga2_estimate(NP, NGEN, data):
         fits_old = fits_new
 
         if count == LIFE or g == max(NGEN):
-            best = hof[0].tolist()
-            best = [int(i) for i in best]
+            # find out the best ( with best MRE )
+            best = pop[np.argmin([ind.fitness.values[0] for ind in pop])]  # type(best) is Individual
+            best = [int(i) for i in best]  # type(best) is decision list
             RES.append(best)
 
     return RES[0], g
