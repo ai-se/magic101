@@ -10,6 +10,7 @@ from deap import tools
 from numpy import median
 
 from ABE.main import abe_execute
+from Optimizer.moead import MOEAD
 
 if not sys.warnoptions:
     warnings.simplefilter("ignore")
@@ -167,6 +168,60 @@ def ga_estimate(NP, NGEN, data):
             RES.append(best)
 
     return RES[0], g
+
+
+def moead_estimate(NP, NGEN, data):
+    """
+
+    :param NP:
+    :param NGEN:
+    :param data:
+    :return:
+    """
+    toolbox = base.Toolbox()
+    creator.create("FitnessMin4", base.Fitness, weights=(-1.0, -1.0))
+    creator.create("Individual4", array.array, typecode='d', fitness=creator.FitnessMin3)
+
+    # toolbox.register("select4", tools.selNSGA2)
+    toolbox.register("mate3", tools.cxTwoPoint)
+
+    def mutInBound(individual, lower, upper, indpb):
+        """ mutation by bit. gurantee to return the integer within [lower_i, upper_i]
+
+        :param individual: Individual to be mutated.
+        :param lower: a list defining the lower bound of each dimension in decision space
+        :param upper: upper list, see lower
+        :param indpb: mutation rate (by bit)
+        :returns: A tuple of one individual.
+
+        This function uses the :func:`~random.random` function from the python base
+        :mod:`random` module.
+        """
+        for i in range(len(individual)):
+            if random.random() < indpb:
+                individual[i] = random.randint(lower[i], upper[i])
+
+        return individual,
+
+    toolbox.register("mutate3", mutInBound, lower=[0] * 6, upper=[1, 7, 2, 5, 3, 5], indpb=0.1)
+
+    def tmp_eval(ind):
+        ind.fitness.values = transform2(ind, data)
+
+    toolbox.register("evaluate4", tmp_eval)
+
+    MU = 50
+    LAMBDA = 2
+    CXPB = 0.7
+    MUTPB = 0.2
+
+    ea = MOEAD(NP, toolbox, MU, CXPB, MUTPB, ngen=NGEN, nr=LAMBDA)
+    pop = ea.execute()
+
+    best, g = pop[np.argmin([ind.fitness.values[0] for ind in pop])]  # type(best) is Individual
+    best = [int(i) for i in best]  # type(best) is decision list
+
+    return best, g
 
 
 def nsga2_estimate(NP, NGEN, data):
