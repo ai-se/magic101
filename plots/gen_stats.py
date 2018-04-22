@@ -6,7 +6,7 @@ from random import *
 data_list = ["albrecht", "desharnais", "finnish", "kemerer", "maxwell",
              "miyazaki", "china", "isbsg10", "kitchenham"]
 
-data_index = 1
+data_index = 3
 
 def gen_stat(data_index):
 
@@ -14,19 +14,19 @@ def gen_stat(data_index):
     data.columns = ["Data_ID", "Method_ID", "MRE", "SA", "CONFIG", "NGEN"]
 
 
-    df_DE250 = data.query('Data_ID == ["'+str(data_index)+'"] and Method_ID == ["5"]')
-    DE250_NGEN = sorted(df_DE250.loc[:,"NGEN"])
+    df_DE30 = data.query('Data_ID == ["'+str(data_index)+'"] and Method_ID == ["5"]')
+    DE30_NGEN = sorted(df_DE30.loc[:,"NGEN"])
 
 
-    df_GA250 = data.query('Data_ID == ["'+str(data_index)+'"] and Method_ID == ["6"]')
-    GA250_NGEN = sorted(df_GA250.loc[:,"NGEN"])
+    df_GA100 = data.query('Data_ID == ["'+str(data_index)+'"] and Method_ID == ["6"]')
+    GA100_NGEN = sorted(df_GA100.loc[:,"NGEN"])
 
     # print("Dataset:", data_list[data_index])
     # print("DE250_gen:", int(np.median(DE250_NGEN)))
     # print("GA250_gen:", int(np.median(GA250_NGEN)))
 
-    GEN_DE = int(np.median(DE250_NGEN))
-    GEN_GA = int(np.median(GA250_NGEN))
+    GEN_DE = int(np.median(DE30_NGEN))
+    GEN_GA = int(np.median(GA100_NGEN))
     return GEN_DE, GEN_GA
 
 List_DE = []
@@ -47,7 +47,7 @@ X = np.arange(9)
 plt.xticks(X, objects)
 plt.bar(X + 0.00, data[0], color = 'b', width = 0.25)
 plt.bar(X + 0.25, data[1], color = 'r', width = 0.25)
-plt.legend(['DE250', 'GA250'], loc='upper left', fontsize = 'small')
-plt.title('Number of Generations for DE and GA')
+plt.legend(['DE30', 'GA100'], loc='upper left', fontsize = 'small')
+plt.title('Number of Generations for DE30 and GA100')
 
 plt.show()

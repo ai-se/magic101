@@ -1,4 +1,7 @@
+from random import choice
+
 import numpy as np
+from scipy import stats, std, sqrt
 import pdb
 from ABE.main import abe_execute
 from ABE.main import gen_setting_obj
@@ -36,12 +39,12 @@ def get_setting_obj(configurationIndex):
 
 
 def mre_calc(y_predict, y_actual):
-    mre = []
+    mre_list = []
     for predict, actual in zip(y_predict, y_actual):
-        mre.append(abs(predict - actual) / (actual))
-    MRE = np.median(mre)
+        mre_list.append(abs(predict - actual) / (actual))
+    MRE = np.median(mre_list)
     if MRE == 0:
-        MRE = np.mean(mre)
+        MRE = np.mean(mre_list)
     return MRE
 
 
@@ -53,6 +56,30 @@ def sa_calc(Y_predict, Y_actual):
     marr = sum(Y_actual) / len(Y_actual)
     sa_error = (1 - mar / marr)
     return sa_error
+
+
+def ci_calc(y_predict, y_actual, testData):
+    mre_list = []
+    for predict, actual in zip(y_predict, y_actual):
+        mre_list.append(abs(predict - actual) / (actual))
+    dfree = len(testData) - (len(testData.columns)-1)
+    qf = stats.t.ppf(0.95, dfree)
+    ci = qf * std(mre_list) / sqrt(len(testData))
+    return ci
+
+
+def msa(Y_predict, Y_actual):
+  """
+  Mean Standard Accuracy
+  :param args: [[actual vals], [predicted vals], [all effort]]
+  :return:
+  """
+  assert len(Y_actual) == len(Y_predict)
+
+  mae = sum([abs(actual - predicted) for actual, predicted in zip(Y_actual, Y_predict)]) / len(Y_actual)
+  mae_guess = sum([abs(choice(Y_actual) - choice(Y_predict)) for _ in range(1000)]) / 1000
+  # if mae_guess < mae: return 0
+  return 1 - (mae / mae_guess)
 
 
 def transform(configurationIndex, data):
@@ -68,7 +95,7 @@ def transform(configurationIndex, data):
 
 def calc_error(bestConfigIndex, testData):
     Y_predict, Y_actual = abe_execute(S=get_setting_obj(bestConfigIndex), data=testData)
-    return mre_calc(Y_predict, Y_actual), sa_calc(Y_predict, Y_actual)
+    return mre_calc(Y_predict, Y_actual), msa(Y_predict, Y_actual), ci_calc(Y_predict, Y_actual, testData)
 
 
 if __name__ == '__main__':

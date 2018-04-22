@@ -34,50 +34,56 @@ from Optimizer.feature_link import calc_error
 
 
 def DE2(TrainSet, TestSet):
-    best_config, ngen = de_estimate(2, data=TrainSet)
-    mre, sa = calc_error(best_config, TestSet)
+    best_config, ngen = de_estimate(20, 2, data=TrainSet)
+    mre, sa, ci = calc_error(best_config, TestSet)
     return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
 
 def DE8(TrainSet, TestSet):
-    best_config, ngen = de_estimate(8, data=TrainSet)
-    mre, sa = calc_error(best_config, TestSet)
+    best_config, ngen = de_estimate(20, 8, data=TrainSet)
+    mre, sa, ci = calc_error(best_config, TestSet)
     return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
 
 def RANDOM10(TrainSet, TestSet):
-    best_config = random_strategy(10, data=TrainSet)[0]
-    mre, sa = calc_error(best_config, TestSet)
+    best_config = random_strategy(10, data=TrainSet)
+    mre, sa, ci = calc_error(best_config, TestSet)
     return {"mre": mre, "sa": sa, "config": best_config}
 
 
-def RANDOM20(TrainSet, TestSet):
-    best_config = random_strategy(20, data=TrainSet)[0]
-    mre, sa = calc_error(best_config, TestSet)
+def RANDOM30(TrainSet, TestSet):
+    best_config = random_strategy(30, data=TrainSet)
+    mre, sa, ci = calc_error(best_config, TestSet)
     return {"mre": mre, "sa": sa, "config": best_config}
 
 
 def ABE0(TrainSet, TestSet):
     best_config = [0, 0, 0, 0, 0, 0]
-    mre, sa = calc_error(best_config, TestSet)
+    mre, sa, ci = calc_error(best_config, TestSet)
     return {"mre": mre, "sa": sa, "config": best_config}
 
 
 def DE30(TrainSet, TestSet):
-    best_config, ngen = de_estimate(30, data=TrainSet)
-    mre, sa = calc_error(best_config, TestSet)
+    best_config, ngen = de_estimate(30, 250, data=TrainSet)
+    mre, sa, ci = calc_error(best_config, TestSet)
     return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
 
 def GA100(TrainSet, TestSet):
-    best_config, ngen = ga_estimate(100, data=TrainSet)
-    mre, sa = calc_error(best_config, TestSet)
+    best_config, ngen = ga_estimate(100, 250, data=TrainSet)
+    mre, sa, ci = calc_error(best_config, TestSet)
     return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
 
 def DE10(TrainSet, TestSet):
-    best_config, ngen = de_estimate(10, data=TrainSet)
-    mre, sa = calc_error(best_config, TestSet)
+    best_config, ngen = de_estimate(10, 250, data=TrainSet)
+    mre, sa, ci = calc_error(best_config, TestSet)
+    return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
+
+
+def NSGA2(TrainSet, TestSet):
+    best_config, ngen = nsga2_estimate(100, 250, data=TrainSet)
+    mre, sa, ci = calc_error(best_config, TestSet)
     return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
 
@@ -97,24 +103,22 @@ def exec(modelIndex, methodologyId):
     model = datafunc[modelIndex]
     res = None
 
-    # num_pj = len(model())
-    # if num_pj < 40:
-    #     fold_num = 3
-    # else:
-    #     fold_num = 10
-
-    fold_num = 3
+    num_pj = len(model())
+    if num_pj < 40:
+        fold_num = 3
+    else:
+        fold_num = 10
 
     for train, test in KFoldSplit_df(model(), fold_num):
         if methodologyId == 0:
             res = ABE0(train, test)
-        elif methodologyId == 1:
+        elif methodologyId == 9:
             res = RANDOM10(train, test)
-        elif methodologyId == 2:
-            res = RANDOM20(train, test)
-        elif methodologyId == 3:
+        elif methodologyId == 10:
+            res = RANDOM30(train, test)
+        elif methodologyId == 11:
             res = DE2(train, test)
-        elif methodologyId == 4:
+        elif methodologyId == 12:
             res = DE8(train, test)
         elif methodologyId == 5:
             res = DE30(train, test)
@@ -122,16 +126,16 @@ def exec(modelIndex, methodologyId):
             res = GA100(train, test)
         elif methodologyId == 7:
             res = DE10(train, test)
-        # elif methodologyId == 8:
-        #     res = NSGA2(train, test)
+        elif methodologyId == 8:
+            res = NSGA2(train, test)
         time.sleep(random.random() * 2)  # avoid writing conflicts
 
-        if methodologyId == 0:
+        if methodologyId == 0 or methodologyId == 9 or methodologyId == 10:
             with open('final_list.txt', 'a+') as f:
                 # print("Finishing " + str(sys.argv))
                 f.write(
                     str(modelIndex) + ';' + str(methodologyId) + ';' + str(res["mre"]) + ';' + str(res["sa"]) + ';' +
-                    str(res["config"]) + '\n')
+                    str(res["config"]) + ';' + '\n')
         else:
             with open('final_list.txt', 'a+') as f:
                 f.write(
@@ -142,7 +146,7 @@ def run():
     """
     system arguments:
         1 modelIndex [0-albrecht, 1-desharnais, 2-finnish, 3-kemerer, 4-maxwell, 5-miyazaki, 6-china, 7-isbsg10, 8-kitchenham]
-        2 methodology ID [0-ABE0, 1-ATLM, 2-CART, 3-CoGEE, 4-MOEAD, 5-DE30, 6-GA100, 7-DE10, 8-NSGA2]
+        2 methodology ID [0-ABE0, 1-ATLM, 2-CART, 3-CoGEE, 4-MOEAD, 5-DE30, 6-GA100, 7-DE10, 8-NSGA2, 9-RD10, 10-RD30, 11-DE2, 12-DE8]
         3 core Num, or the repeat times
     :return:
     """
@@ -151,7 +155,7 @@ def run():
     if len(sys.argv) > 1:
         modelIndex, methodologyId, repeatNum = int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3])
     else:  # for default local run
-        modelIndex, methodologyId, repeatNum = 0, 6, 1
+        modelIndex, methodologyId, repeatNum = 2, 11, 1
 
     if repeatNum == 1:
         time2 = time.time()
