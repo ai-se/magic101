@@ -29,7 +29,7 @@ def randlist(a=1, b=7, c=2, d=5, e=3, f=5):
     return k
 
 
-def de_estimate(MU, data):
+def de_estimate(MU, NGEN, data):
     """
 
     :param MU: int
@@ -43,7 +43,6 @@ def de_estimate(MU, data):
     # Differential evolution parameters
     CR = 0.5
     F = 1
-    NGEN = 250
     LIFE = 5
 
     toolbox = base.Toolbox()
@@ -97,7 +96,7 @@ def de_estimate(MU, data):
     return RES[0], g
 
 
-def ga_estimate(NP, data):
+def ga_estimate(NP, NGEN, data):
 
     def evaluateFunc2(config):
         return transform(config, data)
@@ -105,7 +104,6 @@ def ga_estimate(NP, data):
     # Genetic algorithm parameters
     CX = 0.6
     MUT = 0.1
-    NGEN = 250
     LIFE = 5
 
     toolbox = base.Toolbox()
@@ -172,12 +170,11 @@ def ga_estimate(NP, data):
     return RES[0], g
 
 
-def nsga2_estimate(NP, data):
+def nsga2_estimate(NP, NGEN, data):
 
     def evaluateFunc3(config):
         return transform(config, data)
 
-    NGEN = 250
     CXPB = 0.9
     LIFE = 5
 

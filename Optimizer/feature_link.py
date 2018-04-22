@@ -1,3 +1,5 @@
+from random import choice
+
 import numpy as np
 from scipy import stats, std, sqrt
 import pdb
@@ -66,6 +68,20 @@ def ci_calc(y_predict, y_actual, testData):
     return ci
 
 
+def msa(Y_predict, Y_actual):
+  """
+  Mean Standard Accuracy
+  :param args: [[actual vals], [predicted vals], [all effort]]
+  :return:
+  """
+  assert len(Y_actual) == len(Y_predict)
+
+  mae = sum([abs(actual - predicted) for actual, predicted in zip(Y_actual, Y_predict)]) / len(Y_actual)
+  mae_guess = sum([abs(choice(Y_actual) - choice(Y_predict)) for _ in range(1000)]) / 1000
+  # if mae_guess < mae: return 0
+  return 1 - (mae / mae_guess)
+
+
 def transform(configurationIndex, data):
     """
     Given trainDat, TestData and configuration indices, return the MRE of given test data set.
@@ -79,7 +95,7 @@ def transform(configurationIndex, data):
 
 def calc_error(bestConfigIndex, testData):
     Y_predict, Y_actual = abe_execute(S=get_setting_obj(bestConfigIndex), data=testData)
-    return mre_calc(Y_predict, Y_actual), sa_calc(Y_predict, Y_actual), ci_calc(Y_predict, Y_actual, testData)
+    return mre_calc(Y_predict, Y_actual), msa(Y_predict, Y_actual), ci_calc(Y_predict, Y_actual, testData)
 
 
 if __name__ == '__main__':
