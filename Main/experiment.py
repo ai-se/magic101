@@ -27,7 +27,7 @@ from multiprocessing import Process
 
 import numpy
 
-from Main.methods import de_estimate, ga_estimate, random_strategy, nsga2_estimate
+from Main.methods import de_estimate, ga_estimate, random_strategy, nsga2_estimate, moead_estimate
 from Main.methods import testing
 from Optimizer.feature_link import calc_error
 from data.new_data import data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki, \
@@ -84,7 +84,13 @@ def DE10(TrainSet, TestSet):
 
 
 def NSGA2(TrainSet, TestSet):
-    best_config, ngen = nsga2_estimate(NP=8, NGEN=250, data=TrainSet)
+    best_config, ngen = nsga2_estimate(NP=100, NGEN=250, data=TrainSet)
+    mre, sa, ci = calc_error(best_config, TestSet)
+    return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
+
+
+def MOEAD(TrainSet, TestSet):
+    best_config, ngen = moead_estimate(NP=4, NGEN=250, data=TrainSet)
     mre, sa, ci = calc_error(best_config, TestSet)
     return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
@@ -116,14 +122,8 @@ def exec(modelIndex, methodologyId):
     for train, test in KFoldSplit_df(model(), fold_num):
         if methodologyId == 0:
             res = ABE0(train, test)
-        elif methodologyId == 9:
-            res = RANDOM10(train, test)
-        elif methodologyId == 10:
-            res = RANDOM30(train, test)
-        elif methodologyId == 11:
-            res = DE2(train, test)
-        elif methodologyId == 12:
-            res = DE8(train, test)
+        elif methodologyId == 4:
+            res = MOEAD(train, test)
         elif methodologyId == 5:
             res = DE30(train, test)
         elif methodologyId == 6:
@@ -132,6 +132,14 @@ def exec(modelIndex, methodologyId):
             res = DE10(train, test)
         elif methodologyId == 8:
             res = NSGA2(train, test)
+        elif methodologyId == 9:
+            res = RANDOM10(train, test)
+        elif methodologyId == 10:
+            res = RANDOM30(train, test)
+        elif methodologyId == 11:
+            res = DE2(train, test)
+        elif methodologyId == 12:
+            res = DE8(train, test)
         time.sleep(random.random() * 2)  # avoid writing conflicts
 
         if methodologyId == 0 or methodologyId == 9 or methodologyId == 10:
@@ -160,7 +168,7 @@ def run():
     if len(sys.argv) > 1:
         modelIndex, methodologyId, repeatNum = int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3])
     else:  # for default local run
-        modelIndex, methodologyId, repeatNum = 2, 8, 1
+        modelIndex, methodologyId, repeatNum = 2, 4, 1
 
     if repeatNum == 1:
         time2 = time.time()
