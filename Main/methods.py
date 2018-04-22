@@ -180,7 +180,7 @@ def moead_estimate(NP, NGEN, data):
     """
     toolbox = base.Toolbox()
     creator.create("FitnessMin4", base.Fitness, weights=(-1.0, -1.0))
-    creator.create("Individual4", array.array, typecode='d', fitness=creator.FitnessMin3)
+    creator.create("Individual4", array.array, typecode='d', fitness=creator.FitnessMin4)
 
     # toolbox.register("select4", tools.selNSGA2)
     toolbox.register("mate3", tools.cxTwoPoint)
