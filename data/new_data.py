@@ -11,8 +11,8 @@ def data_albrecht():
 def data_china():
     raw_data = loadarff("./data/china.arff")
     df_data = pd.DataFrame(raw_data[0])
-    # new_chin = df_data.drop(columns=['ID', 'N_effort'])
-    return df_data
+    new_chin = df_data.drop(columns=['ID', 'N_effort'])
+    return new_chin
 
 
 def data_desharnais():
