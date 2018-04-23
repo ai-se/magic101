@@ -225,13 +225,13 @@ def exec(modelIndex, methodologyId):
             res = CART_DE30(model(), train, test)
         time.sleep(random.random() * 2)  # avoid writing conflicts
 
-        if methodologyId == 0 or methodologyId == 2 or methodologyId == 9 or methodologyId == 10:
+        if methodologyId == 0 or methodologyId == 9 or methodologyId == 10:
             with open('final_list.txt', 'a+') as f:
                 # print("Finishing " + str(sys.argv))
                 f.write(
                     str(modelIndex) + ';' + str(methodologyId) + ';' + str(res["mre"]) + ';' + str(res["sa"]) + ';' +
                     str(res["config"]) + ';' + '\n')
-        elif methodologyId in [13, 14, 15,16]:
+        elif methodologyId in [2, 13, 14, 15, 16]:
             with open('final_Cart_DE.txt','a+') as f:
                 f.write(
                     str(modelIndex) + ';' + str(methodologyId) + ';' + str(res["mre"]) + ';' + str(res["sa"]) + ';' + '\n')
