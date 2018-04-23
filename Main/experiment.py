@@ -23,80 +23,94 @@
 import random
 import sys
 import time
+import pdb
 from multiprocessing import Process
 
 import numpy
 
 from Main.methods import de_estimate, ga_estimate, random_strategy, nsga2_estimate, moead_estimate
 from Main.methods import testing
-from Optimizer.feature_link import calc_error
+from Optimizer.feature_link import calc_error1
 from data.new_data import data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki, \
     data_china, data_isbsg10, data_kitchenham
 from utils.kfold import KFoldSplit_df
+from Main.cart import cart
+# from Optimizer.feature_link import  mre_calc, msa
+from Optimizer.errors import  msa, mre
+import numpy as np
 
+f = lambda x: [ s[-1] for s in x.as_matrix()]
 
-def DE2(TrainSet, TestSet):
+def DE2(AllSet, TrainSet, TestSet):
     best_config, ngen = de_estimate(20, 2, data=TrainSet)
-    mre, sa, ci = calc_error(best_config, TestSet)
+    mre, sa, ci = calc_error1(best_config, TestSet, f(AllSet))
     return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
 
-def DE8(TrainSet, TestSet):
+def DE8(AllSet, TrainSet, TestSet):
     best_config, ngen = de_estimate(20, 8, data=TrainSet)
-    mre, sa, ci = calc_error(best_config, TestSet)
+    mre, sa, ci = calc_error1(best_config, TestSet, f(AllSet))
     return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
 
-def RANDOM10(TrainSet, TestSet):
+def RANDOM10(AllSet, TrainSet, TestSet):
     best_config = random_strategy(10, data=TrainSet)
-    mre, sa, ci = calc_error(best_config, TestSet)
+    mre, sa, ci = calc_error1(best_config, TestSet, f(AllSet))
     return {"mre": mre, "sa": sa, "config": best_config}
 
 
-def RANDOM30(TrainSet, TestSet):
+def RANDOM30(AllSet, TrainSet, TestSet):
     best_config = random_strategy(30, data=TrainSet)
-    mre, sa, ci = calc_error(best_config, TestSet)
+    mre, sa, ci = calc_error1(best_config, TestSet, f(AllSet))
     return {"mre": mre, "sa": sa, "config": best_config}
 
 
-def ABE0(TrainSet, TestSet):
+def ABE0(AllSet, TrainSet, TestSet):
     best_config = [0, 0, 0, 0, 0, 0]
-    mre, sa, ci = calc_error(best_config, TestSet)
+    mre, sa, ci = calc_error1(best_config, TestSet, f(AllSet))
     return {"mre": mre, "sa": sa, "config": best_config}
 
 
-def DE30(TrainSet, TestSet):
+def DE30(AllSet, TrainSet, TestSet):
     best_config, ngen = de_estimate(30, 250, data=TrainSet)
-    mre, sa, ci = calc_error(best_config, TestSet)
+    mre, sa, ci = calc_error1(best_config, TestSet, f(AllSet))
     return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
 
-def GA100(TrainSet, TestSet):
+def GA100(AllSet, TrainSet, TestSet):
     best_config, ngen = ga_estimate(100, 250, data=TrainSet)
-    mre, sa, ci = calc_error(best_config, TestSet)
+    mre, sa, ci = calc_error1(best_config, TestSet, f(AllSet))
     return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
 
-def DE10(TrainSet, TestSet):
+def DE10(AllSet, TrainSet, TestSet):
     best_config, ngen = de_estimate(10, 250, data=TrainSet)
-    mre, sa, ci = calc_error(best_config, TestSet)
+    mre, sa, ci = calc_error1(best_config, TestSet, f(AllSet))
     return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
 
-def NSGA2(TrainSet, TestSet):
+def NSGA2(AllSet, TrainSet, TestSet):
     best_config, ngen = nsga2_estimate(NP=100, NGEN=250, data=TrainSet)
-    mre, sa, ci = calc_error(best_config, TestSet)
+    mre, sa, ci = calc_error1(best_config, TestSet, f(AllSet))
     return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
 
-def MOEAD(TrainSet, TestSet):
+def MOEAD(AllSet, TrainSet, TestSet):
     best_config, ngen = moead_estimate(NP=4, NGEN=250, data=TrainSet)
-    mre, sa, ci = calc_error(best_config, TestSet)
+    mre, sa, ci = calc_error1(best_config, TestSet, f(AllSet))
     return {"mre": mre, "sa": sa, "config": best_config, "gen": ngen}
 
 
 def ATLM():
     pass
+
+
+def CART0(dataset, Trainset, TestSet):
+    res = cart(dataset, Trainset, TestSet)
+    Y_predict, Y_actual, total = res
+    _mre, sa = mre(Y_predict, Y_actual, total), msa(Y_predict, Y_actual, total)
+    print("mre: {0}, sa: {1}".format(_mre,sa))
+    return {"mre": _mre, "sa": sa, "config": None, "gen": None}
 
 
 def exec(modelIndex, methodologyId):
@@ -121,25 +135,27 @@ def exec(modelIndex, methodologyId):
 
     for train, test in KFoldSplit_df(model(), fold_num):
         if methodologyId == 0:
-            res = ABE0(train, test)
+            res = ABE0(model(), train, test)
+        if methodologyId == 2:
+            res = CART0(model(), train, test)
         elif methodologyId == 4:
-            res = MOEAD(train, test)
+            res = MOEAD(model(), train, test)
         elif methodologyId == 5:
-            res = DE30(train, test)
+            res = DE30(model(), train, test)
         elif methodologyId == 6:
-            res = GA100(train, test)
+            res = GA100(model(), train, test)
         elif methodologyId == 7:
-            res = DE10(train, test)
+            res = DE10(model(), train, test)
         elif methodologyId == 8:
-            res = NSGA2(train, test)
+            res = NSGA2(model(), train, test)
         elif methodologyId == 9:
-            res = RANDOM10(train, test)
+            res = RANDOM10(model(), train, test)
         elif methodologyId == 10:
-            res = RANDOM30(train, test)
+            res = RANDOM30(model(), train, test)
         elif methodologyId == 11:
-            res = DE2(train, test)
+            res = DE2(model(), train, test)
         elif methodologyId == 12:
-            res = DE8(train, test)
+            res = DE8(model(), train, test)
         time.sleep(random.random() * 2)  # avoid writing conflicts
 
         if methodologyId == 0 or methodologyId == 9 or methodologyId == 10:
@@ -159,7 +175,7 @@ def run():
     """
     system arguments:
         1 modelIndex [0-albrecht, 1-desharnais, 2-finnish, 3-kemerer, 4-maxwell, 5-miyazaki, 6-china, 7-isbsg10, 8-kitchenham]
-        2 methodology ID [0-ABE0, 1-ATLM, 2-CART, 3-CoGEE, 4-MOEAD, 5-DE30, 6-GA100, 7-DE10, 8-NSGA2, 9-RD10, 10-RD30, 11-DE2, 12-DE8]
+        2 methodology ID [0-ABE0, 1-ATLM, 2-CART0, 3-CoGEE, 4-MOEAD, 5-DE30, 6-GA100, 7-DE10, 8-NSGA2, 9-RD10, 10-RD30, 11-DE2, 12-DE8]
         3 core Num, or the repeat times
     :return:
     """
@@ -179,9 +195,8 @@ def run():
     time1 = time.time()
     p = list()
     for i in range(repeatNum):
-        p_tmp = Process(target=exec, args=(modelIndex, methodologyId))
-        p_tmp.start()
-        p.append(p_tmp)
+        p.append(Process(target=exec, args=(modelIndex, methodologyId)))
+        p[-1].start()
 
     for i in range(repeatNum):
         p[i].join()
