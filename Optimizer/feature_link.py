@@ -4,6 +4,8 @@ from scipy import stats, std, sqrt
 from ABE.main import abe_execute
 from ABE.main import gen_setting_obj
 from utils.kfold import KFoldSplit_df
+from Optimizer.errors import msa as g_msa
+from Optimizer.errors import mre as g_mre
 
 
 def get_setting_obj(configurationIndex):
@@ -110,6 +112,10 @@ def transform2(configurationIndex, data):
 def calc_error(bestConfigIndex, testData):
     Y_predict, Y_actual = abe_execute(S=get_setting_obj(bestConfigIndex), data=testData)
     return mre_calc(Y_predict, Y_actual), msa(Y_predict, Y_actual), ci_calc(Y_predict, Y_actual, testData)
+
+def calc_error1(bestConfigIndex, testData, allData):
+    Y_predict, Y_actual = abe_execute(S=get_setting_obj(bestConfigIndex), data=testData)
+    return g_mre(Y_actual, Y_predict, allData), g_msa(Y_actual, Y_predict, allData), ci_calc(Y_predict, Y_actual, testData)
 
 
 if __name__ == '__main__':
