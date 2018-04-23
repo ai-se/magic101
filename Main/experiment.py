@@ -25,6 +25,8 @@ import sys
 import time
 from multiprocessing import Process
 
+import numpy
+
 from Main.methods import de_estimate, ga_estimate, random_strategy, nsga2_estimate, moead_estimate
 from Main.methods import testing
 from Optimizer.feature_link import calc_error
@@ -104,6 +106,8 @@ def exec(modelIndex, methodologyId):
     :return: writing to final_list.txt
         ^^^^ repeatID mre sa
     """
+    numpy.random.seed()
+
     datafunc = [data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki,
                 data_china, data_isbsg10, data_kitchenham]
     model = datafunc[modelIndex]
@@ -175,13 +179,13 @@ def run():
     time1 = time.time()
     p = list()
     for i in range(repeatNum):
-        p.append(Process(target=exec, args=(modelIndex, methodologyId)))
-        p[-1].start()
+        p_tmp = Process(target=exec, args=(modelIndex, methodologyId))
+        p_tmp.start()
+        p.append(p_tmp)
 
     for i in range(repeatNum):
         p[i].join()
     print("total time = " + str(time.time() - time1))
-
     print("--- %s seconds ---" % (time.time() - start_time))
 
 
