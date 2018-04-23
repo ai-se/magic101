@@ -22,6 +22,7 @@ import random
 from copy import deepcopy
 
 from deap import tools
+from numpy import median
 
 
 class MOEAD(object):
@@ -141,6 +142,7 @@ class MOEAD(object):
 
         count = 0
         g = 0
+        LIFE = 5
         fits_old = [ind.fitness.values[0] for ind in self.population]
 
         while count < LIFE and self.evaluations_ < self.maxEvaluations:
@@ -150,7 +152,7 @@ class MOEAD(object):
             permutation = [None] * self.populationSize_  # Of type int
             self.randomPermutations(permutation, self.populationSize_)
 
-            for i in xrange(self.populationSize_):
+            for i in range(self.populationSize_):
                 n = permutation[i]
                 type_ = int()
                 rnd = random.random()
@@ -222,7 +224,7 @@ class MOEAD(object):
 
         """
         if self.n_objectives == 2:
-            for n in xrange(self.populationSize_):
+            for n in range(self.populationSize_):
                 a = 1.0 * float(n) / (self.populationSize_ - 1)
                 self.lambda_[n][0] = a
                 self.lambda_[n][1] = 1 - a
@@ -234,8 +236,8 @@ class MOEAD(object):
             m = self.populationSize_
 
             self.lambda_ = list()
-            for i in xrange(m):
-                for j in xrange(m):
+            for i in range(m):
+                for j in range(m):
                     if i + j <= m:
                         k = m - i - j
                         try:
@@ -306,8 +308,8 @@ class MOEAD(object):
         x = [None] * self.populationSize_  # Of type float
         idx = [None] * self.populationSize_  # Of type int
 
-        for i in xrange(self.populationSize_):
-            for j in xrange(self.populationSize_):
+        for i in range(self.populationSize_):
+            for j in range(self.populationSize_):
                 x[j] = self.distVector(self.lambda_[i], self.lambda_[j])
                 idx[j] = j
 
@@ -320,7 +322,7 @@ class MOEAD(object):
     """
 
     def initPopulation(self):
-        for i in xrange(self._populationSize):
+        for i in range(self._populationSize):
             if True:
                 continue
             # generated solutions
@@ -340,7 +342,7 @@ class MOEAD(object):
             self.z_[i] = 1e30 * self.indArray_[i].fitness.weights[i]  # mbelmadani: For minimization objectives
             self.evaluations_ += 1
 
-        for i in xrange(self.populationSize_):  # ?
+        for i in range(self.populationSize_):  # ?
             self.updateReference(self.population[i])
 
     """
@@ -369,7 +371,7 @@ class MOEAD(object):
             else:
                 p = random.randint(0, self.populationSize_ - 1)
             flag = True
-            for i in xrange(len(vector)):
+            for i in range(len(vector)):
                 if vector[i] == p:  # p is in the list
                     flag = False
                     break
@@ -382,7 +384,7 @@ class MOEAD(object):
     """
 
     def updateReference(self, individual):
-        for n in xrange(self.n_objectives):
+        for n in range(self.n_objectives):
             if individual.fitness.values[n] < self.z_[n]:
                 self.z_[n] = individual.fitness.values[n] * individual.fitness.weights[n]
                 self.indArray_[n] = individual
@@ -413,7 +415,7 @@ class MOEAD(object):
 
         self.randomPermutations(perm, size)
 
-        for i in xrange(size):
+        for i in range(size):
             k = int()
             if type_ == 1:
                 k = self.neighbourhood_[id_][perm[i]]
@@ -444,7 +446,7 @@ class MOEAD(object):
 
         if self.functionType_ == "_TCHE1":
             maxFun = -1.0e+30
-            for n in xrange(self.n_objectives):
+            for n in range(self.n_objectives):
                 diff = abs(individual.fitness.values[n] - self.z_[n])  # JMetal default
                 feval = float()
                 if lambda_[n] == 0:
@@ -469,7 +471,7 @@ class MOEAD(object):
     def distVector(self, vector1, vector2):
         dim = len(vector1)
         sum_ = 0
-        for n in xrange(dim):
+        for n in range(dim):
             sum_ += ((vector1[n] - vector2[n]) * (vector1[n] - vector2[n]))
         return math.sqrt(sum_)
 
@@ -480,8 +482,8 @@ class MOEAD(object):
         n   : integer
         m   : integer        
         """
-        for i in xrange(m):
-            for j in xrange(i + 1, n):
+        for i in range(m):
+            for j in range(i + 1, n):
                 if x[i] > x[j]:
                     temp = x[i]
                     x[i] = x[j]

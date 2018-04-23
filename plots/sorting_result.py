@@ -1,4 +1,5 @@
 import pandas as pd
+import pdb
 import numpy as np
 import matplotlib.pyplot as plt
 from random import *
@@ -12,7 +13,8 @@ data_list = ["albrecht", "desharnais", "finnish", "kemerer", "maxwell",
              "miyazaki", "china", "isbsg10", "kitchenham"]
 
 # data = pd.read_csv('./final_list_cr0.3_f0.8.txt', sep=";", header=None)
-data = pd.read_csv('Outputs/final_list_candi.txt', sep=";", header=None)
+data = pd.read_csv('Outputs/final_list_ABE0.txt', sep=";", header=None)
+
 data.columns = ["Data_ID", "Method_ID", "MRE", "SA", "CONFIG", "NGEN"]
 
 whigham = pd.read_csv('Outputs/ATLM.txt', sep=";", header=None)
@@ -62,7 +64,8 @@ df16_SA = sorted(df16.loc[:,"SA"])
 # print(len(data.query('Data_ID == ["6"] and Method_ID == ["6"]')))
 # print(data.query('Data_ID == ["6"] and Method_ID == ["8"]'))
 # print(len(data.query('Data_ID == ["6"]')))
-print(len(data.query('Method_ID == ["0"]')))
+aaa = (data.query('Method_ID == ["0"]').iloc[:,3])
+print(type(aaa))
 # font = {
 #         # 'weight' : 'bold',
 #         'size'   : 14}
