@@ -34,7 +34,8 @@ from Optimizer.feature_link import calc_error1
 from data.new_data import data_albrecht, data_desharnais, data_finnish, data_kemerer, data_maxwell, data_miyazaki, \
     data_china, data_isbsg10, data_kitchenham
 from utils.kfold import KFoldSplit_df
-from Main.cart import cart
+from sklearn.model_selection import train_test_split
+from Main.cart import *
 # from Optimizer.feature_link import  mre_calc, msa
 from Optimizer.errors import  msa, mre
 import numpy as np
@@ -106,11 +107,69 @@ def ATLM():
 
 
 def CART0(dataset, Trainset, TestSet):
-    res = cart(dataset, Trainset, TestSet)
-    Y_predict, Y_actual, total = res
-    _mre, sa = mre(Y_predict, Y_actual, total), msa(Y_predict, Y_actual, total)
-    print("mre: {0}, sa: {1}".format(_mre,sa))
+    Y_predict, Y_actual = cart(Trainset, TestSet)
+    _mre, sa = mre(Y_predict, Y_actual, f(dataset)), msa(Y_predict, Y_actual, f(dataset))
+    # print("mre: {0}, sa: {1}".format(_mre,sa))
     return {"mre": _mre, "sa": sa, "config": None, "gen": None}
+
+def CART_DE2(dataset, Trainset, TestSet):
+    learner = Cart
+    goal = "MRE"
+    train_X, train_Y= data_format(Trainset)
+    new_train_X, tune_X, new_train_Y, tune_Y = train_test_split(train_X, train_Y, test_size=0.3, shuffle=True)
+    test_X, Y_actual = data_format(TestSet)
+    params, evaluation = tune_learner(learner, new_train_X, new_train_Y,
+                                      tune_X, tune_Y, goal, num_population=20,repeats=2,life=20)
+    clf = learner(train_X, train_Y, test_X, Y_actual, goal).learner.set_params(**params)
+    clf.fit(train_X, train_Y)
+    Y_predict = clf.predict(test_X)
+    _mre, sa = mre(Y_predict, Y_actual, f(dataset)), msa(Y_predict, Y_actual, f(dataset))
+    # print("mre: {0}, sa: {1}".format(_mre,sa))
+    return {"mre": _mre, "sa": sa, "config": None, "gen": None}
+
+def CART_DE8(dataset, Trainset, TestSet):
+    learner = Cart
+    goal = "MRE"
+    train_X, train_Y= data_format(Trainset)
+    new_train_X, tune_X, new_train_Y, tune_Y = train_test_split(train_X, train_Y, test_size=0.3, shuffle=True)
+    test_X, Y_actual = data_format(TestSet)
+    params, evaluation = tune_learner(learner, new_train_X, new_train_Y, tune_X, tune_Y, goal, num_population=20, repeats=8,life=20)
+    clf = learner(train_X, train_Y, test_X, Y_actual, goal).learner.set_params(**params)
+    clf.fit(train_X, train_Y)
+    Y_predict = clf.predict(test_X)
+    _mre, sa = mre(Y_predict, Y_actual, f(dataset)), msa(Y_predict, Y_actual, f(dataset))
+    # print("mre: {0}, sa: {1}".format(_mre,sa))
+    return {"mre": _mre, "sa": sa, "config": None, "gen": None}
+
+def CART_DE10(dataset, Trainset, TestSet):
+    learner = Cart
+    goal = "MRE"
+    train_X, train_Y= data_format(Trainset)
+    new_train_X, tune_X, new_train_Y, tune_Y = train_test_split(train_X, train_Y, test_size=0.3, shuffle=True)
+    test_X, Y_actual = data_format(TestSet)
+    params, evaluation = tune_learner(learner, new_train_X, new_train_Y, tune_X, tune_Y, goal, num_population=10,repeats=250,life=5)
+    clf = learner(train_X, train_Y, test_X, Y_actual, goal).learner.set_params(**params)
+    clf.fit(train_X, train_Y)
+    Y_predict = clf.predict(test_X)
+    _mre, sa = mre(Y_predict, Y_actual, f(dataset)), msa(Y_predict, Y_actual, f(dataset))
+    # print("mre: {0}, sa: {1}".format(_mre,sa))
+    return {"mre": _mre, "sa": sa, "config": None, "gen": None}
+
+def CART_DE30(dataset, Trainset, TestSet):
+    learner = Cart
+    goal = "MRE"
+    train_X, train_Y= data_format(Trainset)
+    new_train_X, tune_X, new_train_Y, tune_Y = train_test_split(train_X, train_Y, test_size=0.3, shuffle=True)
+    test_X, Y_actual = data_format(TestSet)
+    params, evaluation = tune_learner(learner, new_train_X, new_train_Y, tune_X, tune_Y, goal,num_population=30,repeats=250,life=5)
+    clf = learner(train_X, train_Y, test_X, Y_actual, goal).learner.set_params(**params)
+    clf.fit(train_X, train_Y)
+    Y_predict = clf.predict(test_X)
+    _mre, sa = mre(Y_predict, Y_actual, f(dataset)), msa(Y_predict, Y_actual, f(dataset))
+    # print("mre: {0}, sa: {1}".format(_mre,sa))
+    return {"mre": _mre, "sa": sa, "config": None, "gen": None}
+
+
 
 
 def exec(modelIndex, methodologyId):
@@ -132,7 +191,7 @@ def exec(modelIndex, methodologyId):
         fold_num = 3
     else:
         fold_num = 10
-
+    # temp = {}
     for train, test in KFoldSplit_df(model(), fold_num):
         if methodologyId == 0:
             res = ABE0(model(), train, test)
@@ -156,6 +215,14 @@ def exec(modelIndex, methodologyId):
             res = DE2(model(), train, test)
         elif methodologyId == 12:
             res = DE8(model(), train, test)
+        elif methodologyId == 13:
+            res = CART_DE2(model(), train, test)
+        elif methodologyId == 14:
+            res = CART_DE8(model(), train, test)
+        elif methodologyId == 15:
+            res = CART_DE10(model(), train, test)
+        elif methodologyId == 16:
+            res = CART_DE30(model(), train, test)
         time.sleep(random.random() * 2)  # avoid writing conflicts
 
         if methodologyId == 0 or methodologyId == 9 or methodologyId == 10:
@@ -164,18 +231,29 @@ def exec(modelIndex, methodologyId):
                 f.write(
                     str(modelIndex) + ';' + str(methodologyId) + ';' + str(res["mre"]) + ';' + str(res["sa"]) + ';' +
                     str(res["config"]) + ';' + '\n')
+        elif methodologyId in [13, 14, 15,16]:
+            with open('final_Cart_DE.txt','a+') as f:
+                f.write(
+                    str(modelIndex) + ';' + str(methodologyId) + ';' + str(res["mre"]) + ';' + str(res["sa"]) + ';' + '\n')
+
         else:
             with open('final_list.txt', 'a+') as f:
                 f.write(
                     str(modelIndex) + ';' + str(methodologyId) + ';' + str(res["mre"]) + ';' + str(res["sa"]) + ';' +
                     str(res["config"]) + ';' + str(res["gen"]) + '\n')
+        # temp["mre"] = temp.get("mre",[]) + [res["mre"]]
+        # temp["sa"] = temp.get("sa",[])+ [res["sa"]]
+    # print("mre median:", np.median(temp["mre"]))
+    # print("sa median:", np.median(temp["sa"]))
 
 
 def run():
     """
     system arguments:
         1 modelIndex [0-albrecht, 1-desharnais, 2-finnish, 3-kemerer, 4-maxwell, 5-miyazaki, 6-china, 7-isbsg10, 8-kitchenham]
-        2 methodology ID [0-ABE0, 1-ATLM, 2-CART0, 3-CoGEE, 4-MOEAD, 5-DE30, 6-GA100, 7-DE10, 8-NSGA2, 9-RD10, 10-RD30, 11-DE2, 12-DE8]
+        2 methodology ID [0-ABE0, 1-ATLM, 2-CART0, 3-CoGEE, 4-MOEAD, 5-DE30, 6-GA100,
+                          7-DE10, 8-NSGA2, 9-RD10, 10-RD30, 11-DE2, 12-DE8, 13-CART_DE2,
+                          14-CART_DE8, 15-CART_DE10,16-CART_DE30]
         3 core Num, or the repeat times
     :return:
     """
