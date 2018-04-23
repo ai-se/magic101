@@ -158,7 +158,7 @@ def exec(modelIndex, methodologyId):
             res = DE8(model(), train, test)
         time.sleep(random.random() * 2)  # avoid writing conflicts
 
-        if methodologyId == 0 or methodologyId == 9 or methodologyId == 10:
+        if methodologyId == 0 or methodologyId == 2 or methodologyId == 9 or methodologyId == 10:
             with open('final_list.txt', 'a+') as f:
                 # print("Finishing " + str(sys.argv))
                 f.write(
@@ -184,7 +184,7 @@ def run():
     if len(sys.argv) > 1:
         modelIndex, methodologyId, repeatNum = int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3])
     else:  # for default local run
-        modelIndex, methodologyId, repeatNum = 2, 4, 1
+        modelIndex, methodologyId, repeatNum = 0, 0, 1
 
     if repeatNum == 1:
         time2 = time.time()
