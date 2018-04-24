@@ -24,6 +24,7 @@ import random
 import sys
 import time
 import pdb
+import os
 from multiprocessing import Process
 
 import numpy
@@ -39,6 +40,7 @@ from Main.cart import *
 # from Optimizer.feature_link import  mre_calc, msa
 from Optimizer.errors import  msa, mre
 import numpy as np
+import pandas as pd
 
 f = lambda x: [ s[-1] for s in x.as_matrix()]
 
@@ -125,7 +127,7 @@ def CART_DE2(dataset, Trainset, TestSet):
     Y_predict = clf.predict(test_X)
     _mre, sa = mre(Y_predict, Y_actual, f(dataset)), msa(Y_predict, Y_actual, f(dataset))
     # print("mre: {0}, sa: {1}".format(_mre,sa))
-    return {"mre": _mre, "sa": sa, "config": None, "gen": None}
+    return {"mre": _mre, "sa": sa, "config": None, "gen": None, "params":params}
 
 def CART_DE8(dataset, Trainset, TestSet):
     learner = Cart
@@ -139,7 +141,7 @@ def CART_DE8(dataset, Trainset, TestSet):
     Y_predict = clf.predict(test_X)
     _mre, sa = mre(Y_predict, Y_actual, f(dataset)), msa(Y_predict, Y_actual, f(dataset))
     # print("mre: {0}, sa: {1}".format(_mre,sa))
-    return {"mre": _mre, "sa": sa, "config": None, "gen": None}
+    return {"mre": _mre, "sa": sa, "config": None, "gen": None, "params":params}
 
 def CART_DE10(dataset, Trainset, TestSet):
     learner = Cart
@@ -169,10 +171,21 @@ def CART_DE30(dataset, Trainset, TestSet):
     # print("mre: {0}, sa: {1}".format(_mre,sa))
     return {"mre": _mre, "sa": sa, "config": None, "gen": None}
 
+def get_best_param(stats, this_best):
+    """
+
+    :param stats: stats of one specific data set
+    :param this_best: current best parameters for one DE tuning
+    :return:
+    """
+
+    for key, val in this_best.items():
+        stats[key] = stats.get(key,[]) + [val]
+    return stats
 
 
 
-def exec(modelIndex, methodologyId):
+def exec(modelIndex, methodologyId, save_params=True):
     """
     :param modelIndex:
     :param methodologyId:
@@ -192,6 +205,8 @@ def exec(modelIndex, methodologyId):
     else:
         fold_num = 10
     # temp = {}
+    stats = {}
+    data_name = datafunc[modelIndex].__name__.split("_")[1]
     for train, test in KFoldSplit_df(model(), fold_num):
         if methodologyId == 0:
             res = ABE0(model(), train, test)
@@ -224,6 +239,7 @@ def exec(modelIndex, methodologyId):
         elif methodologyId == 16:
             res = CART_DE30(model(), train, test)
         time.sleep(random.random() * 2)  # avoid writing conflicts
+        stats[data_name] = get_best_param(stats.get(data_name,{}), res["params"])
 
         if methodologyId == 0 or methodologyId == 9 or methodologyId == 10:
             with open('final_list.txt', 'a+') as f:
@@ -241,10 +257,15 @@ def exec(modelIndex, methodologyId):
                 f.write(
                     str(modelIndex) + ';' + str(methodologyId) + ';' + str(res["mre"]) + ';' + str(res["sa"]) + ';' +
                     str(res["config"]) + ';' + str(res["gen"]) + '\n')
-        # temp["mre"] = temp.get("mre",[]) + [res["mre"]]
-        # temp["sa"] = temp.get("sa",[])+ [res["sa"]]
-    # print("mre median:", np.median(temp["mre"]))
-    # print("sa median:", np.median(temp["sa"]))
+
+    df = pd.DataFrame.from_dict(stats[data_name])
+    if save_params:
+        if os.path.exists(data_name+".csv"):
+            with open(data_name+".csv", "a") as f:
+                df.to_csv(f, header=False, index=False)
+        else:
+            with open(data_name+".csv", "a") as f:
+                df.to_csv(f, header=True, index=False)
 
 
 def run():
