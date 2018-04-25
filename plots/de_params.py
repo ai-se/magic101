@@ -39,6 +39,7 @@ def read_files(path="../Results"):
             out += line
         print(out+"\\\\")
         # print("\n"+"="*20+"\n")
+        
 
     csv_files = glob.glob(os.path.join(path, "*.csv"))
     print(csv_files)
