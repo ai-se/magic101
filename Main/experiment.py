@@ -141,6 +141,7 @@ def CART_DE8(dataset, Trainset, TestSet):
     Y_predict = clf.predict(test_X)
     _mre, sa = mre(Y_predict, Y_actual, f(dataset)), msa(Y_predict, Y_actual, f(dataset))
     # print("mre: {0}, sa: {1}".format(_mre,sa))
+    params["actual_depth"] = clf.tree_.max_depth
     return {"mre": _mre, "sa": sa, "config": None, "gen": None, "params":params}
 
 def CART_DE10(dataset, Trainset, TestSet):
@@ -260,11 +261,12 @@ def exec(modelIndex, methodologyId, save_params=True):
 
     df = pd.DataFrame.from_dict(stats[data_name])
     if save_params:
-        if os.path.exists(data_name+".csv"):
-            with open(data_name+".csv", "a") as f:
+        name = data_name+str(methodologyId)+".csv"
+        if os.path.exists(name):
+            with open(name, "a") as f:
                 df.to_csv(f, header=False, index=False)
         else:
-            with open(data_name+".csv", "a") as f:
+            with open(name, "a") as f:
                 df.to_csv(f, header=True, index=False)
 
 

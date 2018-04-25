@@ -26,6 +26,7 @@ def cart(test, train):
     train_ip, train_op = data_format(train)
     test_ip, test_op = data_format(test)
     dec_tree = DecisionTreeRegressor(criterion="mse", random_state=1)
+    pdb.set_trace()
     dec_tree.fit(train_ip, train_op)
     y_predict = dec_tree.predict(test_ip)
     return [y_predict, test_op]
@@ -98,9 +99,9 @@ class Cart(Learners):
         clf = DecisionTreeRegressor()
         self.tunelst = {
             "max_features": [0.01, 1],
-            "max_depth": [1, 50],
+            "max_depth": [1, 12],
             "min_samples_split": [2, 20],
-            "min_samples_leaf": [1, 20],
+            "min_samples_leaf": [1, 12],
             "random_state": [1, 1]
         }
         super(Cart, self).__init__(clf, train_x, train_y, predict_x, predict_y,
