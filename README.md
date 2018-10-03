@@ -32,7 +32,7 @@ Eprint = {arXiv:1708.05442v2},
 
 ## Data
 
-+ [Effort Data](/src/data)
++ [Effort Data](https://github.com/ai-se/magic101/tree/hpc/data)
 
 ## Latex Source
 
