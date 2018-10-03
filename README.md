@@ -23,12 +23,10 @@ Eprint = {arXiv:1708.05442v2},
 
 + Tianpei Xia
   + North Carolina State University, USA
-  + rkrish11@ncsu.edu  
-  + i.m.ralk@gmail.com
+  + txia4@ncsu.edu  
 + Tim Menzies
   + North Carolina State University, USA
   + tim@ieee.org  
-  + tim.menzies@gmail.com
 
 ## Data
 
@@ -36,11 +34,7 @@ Eprint = {arXiv:1708.05442v2},
 
 ## Latex Source
 
-+ [EMSE Submission](/docs/1708.05442/)
-
-## Source Code
-
-+ [BELLTREE](/src/)
++ [EMSE Submission](https://github.com/ai-se/EMSE_OIL_Patrick)
 
 ## License
 
