@@ -10,12 +10,11 @@ ARXIV Link: https://arxiv.org/pdf/1805.00336.pdf
 ## Cite As
 
 ```
-@misc{krishna18belltree,
-Author = {Krishna, Rahul and Menzies, Tim},
-Title = {From Prediction to Planning: Improving Software Quality with BELLTREE},
-Year = {2018},
-journal= {IEEE Transactions on Software Engineering, submitted.},
-Eprint = {arXiv:1708.05442v2},
+@article{xia2018hyperparameter,
+  title={Hyperparameter Optimization for Effort Estimation},
+  author={Xia, Tianpei and Krishna, Rahul and Chen, Jianfeng and Mathew, George and Shen, Xipeng and Menzies, Tim},
+  journal={arXiv preprint arXiv:1805.00336},
+  year={2018}
 }
 ```
 
